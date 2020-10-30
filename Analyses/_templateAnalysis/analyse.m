@@ -17,7 +17,7 @@ clc; clear; close all;
 %% Read settings from setup file
 
 % Look for setup file
-file = dir('TheHill*.xlsx');    % Allow some filename modification
+file = dir('*config*.xlsx');    % Allow some filename modification
 if isempty(file)
     error('Could not find the setup file.');
 end

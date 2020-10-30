@@ -28,7 +28,7 @@ baseFolder = '/Analyses';                                    % Analysis folder
 idx        = strfind(current,baseFolder)-length(baseFolder); % Trim path idx
 base       = current(1:idx+length(baseFolder)-1);            % Trim path
 
-folder   = [base '/Measurement files/' folder];
+folder   = [base '/Measurements/' folder];
 
 % Retrieve file names    
 files = getFileNames(folder);
@@ -89,7 +89,10 @@ end
 
 % Import hotwire data if available
 hotwireFolder = [folder '/hotwire'];
-if exist(hotwireFolder,'dir')
+HW_mat_files = dir([hotwireFolder '/*.mat']);
+HW_csv_files = dir([hotwireFolder '/*HW.csv']);
+
+if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files))
 
     % Determine average viscosity
     if isempty(nu)
@@ -107,10 +110,10 @@ if exist(hotwireFolder,'dir')
         
     end
     
-    % load processed data if available
-    HW_mat_files = dir([hotwireFolder '/*.mat']);
+    
     if forceFileRead==0 && ~isempty(HW_mat_files)
         
+        % load processed data if available
         for i=1:length(HW_mat_files)
             
             load([HW_mat_files(i).folder '/' HW_mat_files(i).name],...
@@ -151,19 +154,16 @@ if exist(hotwireFolder,'dir')
         up_model = up_model2;
         yp_model = yp_model2;
         
-    else
-        
-        % Find data files
-        HW_files = dir([hotwireFolder '/*HW.csv']);
+    elseif ~isempty(HW_csv_files)
         
         % Import data
-        for i=1:length(HW_files)
+        for i=1:length(HW_csv_files)
             
             disp('');
-            disp(['Importing hotwire data: ' HW_files(i).name]);
+            disp(['Importing hotwire data: ' HW_csv_files(i).name]);
             disp('');
             
-            dataFile   = [hotwireFolder '/' HW_files(i).name];
+            dataFile   = [hotwireFolder '/' HW_csv_files(i).name];
             calFile    = [dataFile(1:end-4) '_cal.csv'];
             wallFile   = dir([dataFile(1:end-18) '*wall.csv']);
             ignoreFile = dir([dataFile(1:end-18) '*ignore*']);
@@ -195,7 +195,7 @@ if exist(hotwireFolder,'dir')
                     wallFile  = [wallCalFiles(1).folder '/'...
                                         wallCalFiles(1).name];
                     warning(['Wall calibration ' wallCalFiles(1).name ...
-                        ' used for ' HW_files(i).name]);
+                        ' used for ' HW_csv_files(i).name]);
                 end
                 
             else
@@ -217,10 +217,10 @@ if exist(hotwireFolder,'dir')
                 yp_model{i}] = hotwireProcessor(dataFile, ...
                 calFile, wallFile, ignore, nu_avg);
             
+            y{i} = y{i}+y0(i);
+            
         end
     end
-    
-    y{i} = y{i}+y0(i);
     
 else
     

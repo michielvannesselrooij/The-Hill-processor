@@ -32,7 +32,7 @@ baseFolder = '/Analyses';                                    % Analysis folder
 idx        = strfind(current,baseFolder)-length(baseFolder); % Trim path idx
 base       = current(1:idx+length(baseFolder)-1);            % Trim path
 
-file   = [base '/Measurement files/TheHill_Mastersheet.xlsx'];
+file   = [base '/Measurements/mastersheet.xlsx'];
 
 % Load pressure configurations from Mastersheet
 [~, ~, layouts] = xlsread(file, 'Pressure layouts');

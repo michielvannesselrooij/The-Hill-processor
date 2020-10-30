@@ -1,0 +1,9 @@
+#Ignore
+Measurements/*
+Analyses/*
+Processing/docs
+
+#Allow
+!Measurements/_templateMeasurement
+!Measurements/template_mastersheet.xlsx
+!Analyses/_templateAnalysis

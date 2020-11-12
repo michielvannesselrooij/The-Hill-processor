@@ -26,7 +26,7 @@ function [files] = getFileNames(folder)
         
         % If those also don't exist, tell the user and abort    
         else
-            warning(['There are no suitable measurement files in folder ' folder]);
+            error(['There are no suitable measurement files in folder ' folder]);
             files = [];
             return
         end

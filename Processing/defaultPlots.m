@@ -105,7 +105,7 @@ varNames = {'D_raw_ref', 'D_raw', 'D_p_ref', 'D_p',...
 T = table(summary_F0, summary_F1, summary_Fp0, summary_Fp1, summary_Fc0,...
     summary_Fc1,'VariableNames',varNames,'RowNames',name(idx));
 disp(T);
-writetable(T,'results/summary.xls','WriteRowNames',true);
+writetable(T,['results' filesep 'summary.xls'],'WriteRowNames',true);
 
 % Create charts
 Dmax = max([summary_Fc0; summary_Fc1; summary_F0; summary_F1]);
@@ -127,7 +127,7 @@ for k=idx
     % Save
     set(gcf,'WindowStyle','normal');
     set(gcf, 'Units', 'pixels', 'Position', [10 10 800 600]);
-    saveas(gcf, ['results/' num2str(i) '_' name{i} '.png']);
+    saveas(gcf, ['results' filesep num2str(i) '_' name{i} '.png']);
     set(gcf,'WindowStyle','docked');
     close;
     

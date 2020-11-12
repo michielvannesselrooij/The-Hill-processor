@@ -6,7 +6,7 @@ function [files] = getFileNames(folder)
 % ------------------------------------------------------------------------
 
     % Identify unique measurements
-    files = dir([folder '/*_F.csv']);
+    files = dir([folder filesep '*_F.csv']);
 
     if ~isempty(files)
         % Get master file name
@@ -16,7 +16,7 @@ function [files] = getFileNames(folder)
 
     else
         % Get .mat files in case .csv files were moved/zipped
-        files = dir([folder '/*.mat']);
+        files = dir([folder filesep '*.mat']);
 
         if ~isempty(files)
             % Get master file name (csv names expected by other functions)

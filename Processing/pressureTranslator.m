@@ -28,11 +28,11 @@ else
 
 % Find mastersheet location
 current    = cd;                                             % Current path
-baseFolder = '/Analyses';                                    % Analysis folder
+baseFolder = [filesep 'Analyses'];                           % Analysis folder
 idx        = strfind(current,baseFolder)-length(baseFolder); % Trim path idx
 base       = current(1:idx+length(baseFolder)-1);            % Trim path
 
-file   = [base '/Measurements/mastersheet.xlsx'];
+file   = [base filesep 'Measurements' filesep 'mastersheet.xlsx'];
 
 % Load pressure configurations from Mastersheet
 [~, ~, layouts] = xlsread(file, 'Pressure layouts');

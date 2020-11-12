@@ -24,11 +24,11 @@ end
 
 % Find full path
 current    = cd;                                             % Current path
-baseFolder = '/Analyses';                                    % Analysis folder
+baseFolder = [filesep 'Analyses'];                           % Analysis folder
 idx        = strfind(current,baseFolder)-length(baseFolder); % Trim path idx
 base       = current(1:idx+length(baseFolder)-1);            % Trim path
 
-folder   = [base '/Measurements/' folder];
+folder   = [base filesep 'Measurements' filesep folder];
 
 % Retrieve file names    
 files = getFileNames(folder);
@@ -58,7 +58,7 @@ corr = cell(size(files));
 % Import data
 for i=1:length(files)
 
-    fileName = [folder '/' files{i}];  
+    fileName = [folder filesep files{i}];  
 
     [Cd{i}, F{i}, F_rms{i}, F_power{i}, p{i}, T{i}, Troom{i}, pa{i},...
         hum{i}, Re{i}, V{i}, rho{i}, nu{i}, corr{i}]...
@@ -88,9 +88,9 @@ if exist('warmUp','var')
 end
 
 % Import hotwire data if available
-hotwireFolder = [folder '/hotwire'];
-HW_mat_files = dir([hotwireFolder '/*.mat']);
-HW_csv_files = dir([hotwireFolder '/*HW.csv']);
+hotwireFolder = [folder filesep 'hotwire'];
+HW_mat_files = dir([hotwireFolder filesep '*.mat']);
+HW_csv_files = dir([hotwireFolder filesep '*HW.csv']);
 
 if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files))
 
@@ -116,7 +116,7 @@ if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files
         % load processed data if available
         for i=1:length(HW_mat_files)
             
-            load([HW_mat_files(i).folder '/' HW_mat_files(i).name],...
+            load([HW_mat_files(i).folder filesep HW_mat_files(i).name],...
                 'y', 'u', 'u_rms', 'u_power', 'ut', 'y0', 'k', 'B', 'PI',...
                 'd', 'd_star', 'theta', 'H', 'up_model', 'yp_model');
             
@@ -163,7 +163,7 @@ if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files
             disp(['Importing hotwire data: ' HW_csv_files(i).name]);
             disp('');
             
-            dataFile   = [hotwireFolder '/' HW_csv_files(i).name];
+            dataFile   = [hotwireFolder filesep HW_csv_files(i).name];
             calFile    = [dataFile(1:end-4) '_cal.csv'];
             wallFile   = dir([dataFile(1:end-18) '*wall.csv']);
             ignoreFile = dir([dataFile(1:end-18) '*ignore*']);
@@ -171,35 +171,35 @@ if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files
             % Use the first calibration file in folder, if it doesn't exist
             % for this case
             if ~exist(calFile, 'file')
-                calibrationFiles = dir([hotwireFolder '/*HW_cal.csv']);
+                calibrationFiles = dir([hotwireFolder filesep '*HW_cal.csv']);
                 if length(calibrationFiles)<1
                     % No calibration files in folder
                     error(['No calibration files for the hotwire'...
                         'measurements in ' hotwireFolder]);
                 else
                     % Otherwise use the first calibration file in folder
-                    calFile  = [calibrationFiles(1).folder '/'...
+                    calFile  = [calibrationFiles(1).folder filesep...
                                         calibrationFiles(1).name];
                 end
             end 
             
             % Find a wall calibration if it doesn't exist for this case
             if ~exist(wallFile, 'file')
-                wallCalFiles = dir([hotwireFolder '/*wall.csv']);
+                wallCalFiles = dir([hotwireFolder filesep '*wall.csv']);
                 if length(wallCalFiles)<1
                     % No calibration files in folder
                     warning(['No wall calibration files for the hotwire'...
                         'measurements in ' hotwireFolder]);
                 else
                     % Otherwise use the first calibration file in folder
-                    wallFile  = [wallCalFiles(1).folder '/'...
+                    wallFile  = [wallCalFiles(1).folder filesep...
                                         wallCalFiles(1).name];
                     warning(['Wall calibration ' wallCalFiles(1).name ...
                         ' used for ' HW_csv_files(i).name]);
                 end
                 
             else
-                wallFile = [wallFile.folder '/' wallFile.name];
+                wallFile = [wallFile.folder filesep wallFile.name];
                 
             end
 

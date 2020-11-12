@@ -10,12 +10,12 @@ mkdir figures;
 figList = handle( sort( double(findall(0, 'type', 'figure') ) ));
 
 % Save Matlab figures as .fig file
-savefig(figList, 'figures/figures', 'compact');
+savefig(figList, ['figures' filesep 'figures'], 'compact');
 
 % Undock and save pixel images one by one
 for i=1:length(figList)
     set(figList(i),'WindowStyle','normal');
     set(figList(i), 'Units', 'pixels', 'Position', [10 10 800 600]);
-    saveas(figList(i), ['figures/figure_' num2str(i) '.png']);
+    saveas(figList(i), ['figures' filesep 'figure_' num2str(i) '.png']);
     set(figList(i),'WindowStyle','docked');
 end

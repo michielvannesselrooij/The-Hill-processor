@@ -15,11 +15,11 @@ function [name, Cd0, Re0, dCd, dCdp, Re_target, RMSE, RMSE_X, F, F_rms,...
 
 % Find mastersheet location
 current    = cd;                                             % Current path
-baseFolder = '/Analyses';                                    % Analysis folder
+baseFolder = [filesep 'Analyses'];                           % Analysis folder
 idx        = strfind(current,baseFolder)-length(baseFolder); % Trim path idx
 base       = current(1:idx+length(baseFolder)-1);            % Trim path
 
-file   = [base '/Measurements/mastersheet.xlsx'];
+file   = [base filesep 'Measurements' filesep 'mastersheet.xlsx'];
         
 % Import mastersheet data
 [~, ~, master] = xlsread(file, 'Measurements');
@@ -44,6 +44,11 @@ qChannel        = data{14}; % Pitot pressure channel
 Re_corr         = data{15}; % Reynolds correction factor
 if isnan(Re_corr)
     Re_corr = 0;
+end
+
+% Check if data folder exists
+if isempty(folder)
+    error(['No data folder specified for measurement ID ' ]);
 end
 
 if ~exist('forceFileRead','var')

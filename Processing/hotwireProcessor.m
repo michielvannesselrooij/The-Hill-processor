@@ -62,6 +62,12 @@ u_cal                = u_cal(idx);
 volt_cal(u_cal==Inf) = [];              % Catch potential corrupt data
 u_cal(u_cal==Inf)    = [];              % Catch potential corrupt data
 
+% Stop if there is not enough data
+if length(volt_cal) < 3 || length(u_cal) < 3
+    disp(' ');
+    error(['Insufficient hotwire calibration data present in ' calFile]);
+end
+
 [p, ~, mu] = polyfit(volt_cal, u_cal, 4);
 
 % -------------------------------------------------------------------------

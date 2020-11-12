@@ -289,7 +289,8 @@ for i=idx
 end
 
 %% Dimensional profile (turbulence)
-load('klebanoff.mat','kleb_u','kleby_u');
+load(['..' filesep '..' filesep 'Processing' filesep 'data_sets'...
+    filesep 'klebanoff.mat'],'kleb_u','kleby_u');
 
 figure;
 for i=idx

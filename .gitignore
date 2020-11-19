@@ -7,4 +7,5 @@ Processing/docs
 #Allow
 !Measurements/_templateMeasurement
 !Measurements/template_mastersheet.xlsx
-!Analyses/_templateAnalysis
+!Analyses/_templateAnalysis/config.xlsx
+!Analyses/_templateAnalysis/analyse.m

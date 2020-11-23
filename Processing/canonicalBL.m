@@ -1,5 +1,9 @@
-function [yp_model, up_model, B] = canonicalBL(ut, k, PI, d, nu)
+function [yp_model, up_model, B] = canonicalBL(ut, k, PI, d, nu, muskerOpt)
 %CREATES CANONICAL MODEL BASED ON THE APPROACH BY LOPEZ, 2015.
+
+if ~exist('muskerOpt','var')
+    muskerOpt = false;
+end
 
 % Calculate integration constant s
 B  = 5.0;
@@ -14,11 +18,8 @@ ypmax = d*ut/nu;           % y_plus @ boundary layer edge
 yp1   = (0:0.001:ypmax)';  % y_plus in boundary layer
 
 % Part 1: Musker profile
-
-    % Option 1: fix for k=0.41, B=5.0
-    % s = 0.001093;
-
-    % First estimate s (MvN method)
+    
+    % Estimate s with MvN method
     C_a = [-0.0046, -0.4951, 1.0933, -0.0509];
     C_b = [0.1343,  -0.6548, 1.0593, -0.7775, 0.6402];
     C_c = [-0.7951, 1.4998,  0.8492];
@@ -28,11 +29,13 @@ yp1   = (0:0.001:ypmax)';  % y_plus in boundary layer
 
     s = (a/(B-c))^(1/b);
 
-    % Optimize fit with B
-%     save('Musker_temp.mat', 'B', 'k', 'ypmax');
-%     options = optimoptions(@fmincon, 'Display', 'none', 'FunctionTolerance', 1e-5);
-%     s = fmincon(@muskerFit, s, [], [], [], [], [], [], [], options);
-%     delete('Musker_temp.mat');
+    if muskerOpt
+        % Optimize fit with B
+        save('Musker_temp.mat', 'B', 'k', 'ypmax');
+        options = optimoptions(@fmincon, 'Display', 'none', 'FunctionTolerance', 1e-5);
+        s = fmincon(@muskerFit, s, [], [], [], [], [], [], [], options);
+        delete('Musker_temp.mat');
+    end
 
     yp_musker = yp1;
     up_musker = zeros(size(yp_musker));

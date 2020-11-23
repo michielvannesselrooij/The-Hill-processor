@@ -188,8 +188,8 @@ if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files
                 wallCalFiles = dir([hotwireFolder filesep '*wall.csv']);
                 if length(wallCalFiles)<1
                     % No calibration files in folder
-                    warning(['No wall calibration files for the hotwire'...
-                        'measurements in ' hotwireFolder]);
+                    % warning(['No wall calibration files for the hotwire'...
+                    %    'measurements in ' hotwireFolder]);
                 else
                     % Otherwise use the first calibration file in folder
                     wallFile  = [wallCalFiles(1).folder filesep...
@@ -216,8 +216,6 @@ if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files
                 PI(i), d(i), d_star(i), theta(i), H(i), up_model{i}, ...
                 yp_model{i}] = hotwireProcessor(dataFile, ...
                 calFile, wallFile, ignore, nu_avg);
-            
-            y{i} = y{i}+y0(i);
             
         end
     end

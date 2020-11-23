@@ -48,7 +48,7 @@ end
 
 % Check if data folder exists
 if isempty(folder)
-    error(['No data folder specified for measurement ID ' ]);
+    error(['No data folder specified for measurement ID ' num2str(id)]);
 end
 
 if ~exist('forceFileRead','var')

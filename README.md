@@ -2,7 +2,7 @@
 Dimple Aerospace B.V. - MATLAB package for processing and analyzing Hill measurements
 
 ## Getting started
-1. Add `Processing` folder to your MATLAB path
+1. Add `Processing` folder including subfolders to your MATLAB path
 2. Rename `template_mastersheet.xlsx` to `mastersheet.xlsx` to start using it
 
 ## Usage

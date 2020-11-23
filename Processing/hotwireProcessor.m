@@ -9,6 +9,7 @@ function [y, u, u_rms, u_power, ut, y0, k, B, PI, d, d_star, theta, H,...
 % Probe temperature
 Tw    = 225;        
 
+
 % -------------------------------------------------------------------------
 % Import calibration file
 % -------------------------------------------------------------------------
@@ -70,6 +71,7 @@ end
 
 [p, ~, mu] = polyfit(volt_cal, u_cal, 4);
 
+
 % -------------------------------------------------------------------------
 % Import wall calibration file
 % -------------------------------------------------------------------------
@@ -120,6 +122,7 @@ if ~isempty(wallFile)
     % [p_wall, ~, mu_wall] = polyfit(y_wall, volt_wall, n);
     
 end
+
 
 % -------------------------------------------------------------------------
 % Import measurement file
@@ -206,8 +209,12 @@ for i = 1:length(filter1)-1
     power    = abs(yf).^2/n;                   % Power
     f        = f(1:floor(n/2));                % Second half is symmetric
     power    = power(1:floor(n/2));            % Second half is symmetric
+%     u_power{i} = [f', power];
+    
+    % Filter peaks
+    [pks, f_pks] = findpeaks(power,f,'MinPeakProminence',0.5); 
+    u_power{i} = [f_pks', pks];
 
-    u_power{i} = [f', power];
     
 end
 
@@ -228,12 +235,20 @@ if ~isempty(ignore)
     u_rms(1:ignore)     = [];
     u_power(1:ignore)   = [];
 end
+
+
 % -------------------------------------------------------------------------
 % Profile characterization
 % -------------------------------------------------------------------------
+
+% Fit theoretical profile to extract characteristics
 showPlot = 0;
 [ut, y0, k, B, PI, d, yp_model, up_model] = canonicalOpt(y, u, nu, showPlot);
 
+% correct y-positions with shift from optimization
+y = y + y0; 
+
+% Calculate displacement properties
 U = u(end);
 [~, d_star, theta, H] = calcBLproperties(u, y, U, d);
 

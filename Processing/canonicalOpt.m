@@ -8,64 +8,87 @@ function [ut, dy, k, B, PI, d, yp_model_q, up_model_q] = ...
 % ---------------------------------------------------------------------
 
 % Ut
-k   = 0.41;
-B   = 5.0;
-U   = u(end);
-y(y==0) = 1e-9; % Prevent ln(0)=-Inf
-res = @(Cf) mean(abs( ((1/k*sqrt(Cf/2))*log(y*U/nu) + ...
+k          = 0.41;
+B          = 5.0;
+U          = u(end);
+y(y==0)    = 1e-9; % Prevent ln(0)=-Inf
+res        = @(Cf) mean(abs( ((1/k*sqrt(Cf/2))*log(y*U/nu) + ...
                 1/k*sqrt(Cf/2)*log(sqrt(Cf/2)) + B*sqrt(Cf/2)) - u/U ));
 
 options    = optimoptions(@fmincon, 'Display', 'none', 'Algorithm', 'sqp');
 Cf         = fmincon(res, 1, [], [], [], [], 1e-9, 10, [], options);
 ut_clauser = sqrt(Cf/2)*U;
 
-ut_min = 0.01;
-ut_max = 2*ut_clauser;
-ut_0   = ut_clauser;
+ut_min     = 0.01;
+ut_max     = 2*ut_clauser;
+ut_0       = ut_clauser;
 
 % dy
-dy_min = -1e-3;
-dy_max = 5e-3;
-dy_0   = 0;
+dy_min     = 0e-3;
+dy_max     = 2e-3;
+dy_0       = 0.1e-3;
 
 %k
-k_min  = 0.1;
-k_max  = 0.9;
-k_0    = 0.4;
+k_min      = 0.1;
+k_max      = 0.9;
+k_0        = 0.4;
 
 % PI
-PI_min = 0;
-PI_max = 5;
-PI_0   = 0.5;
+PI_min     = 0;
+PI_max     = 5;
+PI_0       = 0.5;
 
 % d
-d99   = interp1(u/u(end), y, .99);
-d_min = 0.1*d99;
-d_max = 2.0*d99;
-d_0   = 1.3*d99;
+d99        = interp1(u/u(end), y, .99);
+d_min      = 0.1*d99;
+d_max      = 2.0*d99;
+d_0        = 1.0*d99;
 
 % ---------------------------------------------------------------------
 % Optimization
 % ---------------------------------------------------------------------
 
 % Temporarily store boundary layer data for optimization function to use
-save('BL_temp.mat', 'y', 'u', 'nu');
+muskerOpt = false;
+save('BL_temp.mat', 'y', 'u', 'nu', 'muskerOpt');
 
-% Fit optimization parameters
-x0 = [ut_0,   dy_0,   k_0,   PI_0,   d_0];
-lb = [ut_min, dy_min, k_min, PI_min, d_min];
-ub = [ut_max, dy_max, k_max, PI_max, d_max];
+% Global optimization 
+disp('Boundary layer profile characterization');
+disp('-----'); 
+disp('Global optimization with differential evolution');
+DEParams             = getdefaultparams;
+DEParams.saveHistory = 0;
+DEParams.maxtime     = 30*60; % time in seconds
+DEParams.NP          = 50;    % population size (advice: 10x dimension)
+objFctHandle         = @canonicalFit;
 
-% Estimated value of s parameter
-options = optimoptions(@fmincon, 'Display', 'iter', 'Algorithm', 'sqp',...
-            'MaxFunctionEvaluations',1000, 'FunctionTolerance', 1e-10);
-x = fmincon(@canonicalFit, x0, [], [], [], [], lb, ub, [], options);
+paramDefCell = {
+	'ut', [ut_min ut_max], 1e-3, ut_0
+	'dy', [dy_min dy_max], 1e-5, dy_0
+	'k',  [k_min  k_max],  1e-2, k_0
+	'PI', [PI_min PI_max], 1e-2, PI_0
+	'd',  [d_min  d_max],  1e-4, d_0
+};
 
-% Optimized value of s parameter
+x = differentialevolution(DEParams, paramDefCell, objFctHandle);
+
+% Old: SQP optimization
+% x0 = [ut_0,   dy_0,   k_0,   PI_0,   d_0];
+% lb = [ut_min, dy_min, k_min, PI_min, d_min];
+% ub = [ut_max, dy_max, k_max, PI_max, d_max];
 % options = optimoptions(@fmincon, 'Display', 'iter', 'Algorithm', 'sqp',...
-%             'MaxFunctionEvaluations',1000);
-% lb = x*0.9; ub = x*1.1;
-% x = fmincon(@canonicalFit2, x, [], [], [], [], lb, ub, [], options);
+%             'MaxFunctionEvaluations',1000, 'FunctionTolerance', 1e-10);
+% x = fmincon(@canonicalFit, x0, [], [], [], [], lb, ub, [], options);
+
+% Local gradient-based optimization
+disp(' '); disp('Final optimization using SQP');
+% muskerOpt = true;
+% save('BL_temp.mat', 'y', 'u', 'nu', 'muskerOpt');
+options = optimoptions(@fmincon, 'Display', 'iter', 'Algorithm', 'sqp',...
+            'MaxFunctionEvaluations', 1000);
+lb = x*0.9; 
+ub = x*1.1;
+x = fmincon(@canonicalFit, x, [], [], [], [], lb, ub, [], options);
 
 ut = x(1);
 dy = x(2);

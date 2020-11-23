@@ -17,7 +17,7 @@ clc; clear; close all;
 %% Read settings from setup file
 
 % Look for setup file
-file = dir('*config*.xlsx');    % Allow some filename modification
+file = dir('config*.xlsx');    % Allow some filename modification
 if isempty(file)
     error('Could not find the setup file.');
 end
@@ -68,7 +68,7 @@ BLplots(name, y, u, u_rms, u_power, nu_avg, ut, y0, k, B, PI, d, d_star,...
     theta, H, up_model, yp_model, V, dCdp);
 
 % Save figures to file
-% saveAllFigures
+saveAllFigures
 
 %% CUSTOM CODE
 

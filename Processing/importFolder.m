@@ -33,11 +33,6 @@ folder   = [base filesep 'Measurements' filesep folder];
 % Retrieve file names    
 files = getFileNames(folder);
 
-% Import
-F     = cell(size(files));
-F_raw = F;
-V     = F;
-
 % Initialize force measurement outputs
 Cd = cell(size(files));
 F  = cell(size(files));
@@ -53,7 +48,6 @@ V = cell(size(files));
 rho = cell(size(files));
 nu = cell(size(files));
 corr = cell(size(files));
-
 
 % Import data
 for i=1:length(files)

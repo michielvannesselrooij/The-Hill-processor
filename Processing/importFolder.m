@@ -1,6 +1,6 @@
-function [Cd, F, F_rms, F_power, p, T, Troom, pa, hum, Re, V, rho, nu,...
-    nu_avg, corr, y, u, u_rms, u_power, ut, y0, k, B, PI, d, d_star, theta, H, ...
-    up_model, yp_model] = importFolder(folder, pConfig, pCount, ...
+function [Cd, F, F_rms, F_power, p, P, X, T, Troom, pa, hum, Re, V, rho,...
+    nu, nu_avg, corr, y, u, u_rms, u_power, ut, y0, k, B, PI, d, d_star,...
+    theta, H, up_model, yp_model] = importFolder(folder, pConfig, pCount,...
     qChannel, forceFileRead, useTunnelData, Re_corr, warmUp)
 % ------------------------------------------------------------------------
 % Reads all measurements in the specified folder
@@ -54,14 +54,14 @@ for i=1:length(files)
 
     fileName = [folder filesep files{i}];  
 
-    [Cd{i}, F{i}, F_rms{i}, F_power{i}, p{i}, T{i}, Troom{i}, pa{i},...
-        hum{i}, Re{i}, V{i}, rho{i}, nu{i}, corr{i}]...
+    [Cd{i}, F{i}, F_rms{i}, F_power{i}, p{i},  P{i}, X{i}, T{i},...
+        Troom{i}, pa{i}, hum{i}, Re{i}, V{i}, rho{i}, nu{i}, corr{i}]...
         = importMeasurement(fileName, forceFileRead, pConfig,...
-            pCount, qChannel, useTunnelData, Re_corr);
+            useTunnelData, Re_corr);
 
 end
 
-% Ignore first measurement if it is a warm up (unless file it is deleted)
+% Ignore first measurement if it is a warm up (unless file is deleted)
 if exist('warmUp','var')
     if warmUp == 1 && length(files)/2 == floor(length(files)/2)
         Cd(1)       = [];
@@ -69,6 +69,8 @@ if exist('warmUp','var')
         F_rms(1)    = [];
         F_power(1)  = [];
         p(1)        = [];
+        P(1)        = [];
+        X(1)        = [];
         T(1)        = [];
         Troom(1)    = [];
         pa(1)       = [];

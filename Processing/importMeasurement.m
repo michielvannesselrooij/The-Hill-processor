@@ -1,6 +1,5 @@
-function [Cd, F, F_rms, F_power, p, T, Troom, pa, hum, Re, V, rho, nu, corr] = ...
-    importMeasurement(fileName, forceFileRead, pConfig, pCount,...
-    qChannel, useTunnelData, Re_corr)
+function [Cd, F, F_rms, F_power, p, P, X, T, Troom, pa, hum, Re, V, rho, nu, corr] = ...
+    importMeasurement(fileName, forceFileRead, pConfig, useTunnelData, Re_corr)
 % ------------------------------------------------------------------------
 % Reads all data from .csv measurement files and stores it as .mat, or 
 % reads from .mat file if available and not overridden by user.
@@ -43,7 +42,7 @@ if forceFileRead || previouslyProcessed~=2
         [p, p_rms, p_power] = read_file_p(fileName_p, sampleTime);
        
         % Interpret pressure data
-        [q, dF_gap, P, X, p_gap] = pressureTranslator(p, pConfig);
+        [q, dF_gap, dF_int, P, X, p_gap] = pressureTranslator(p, pConfig);
        
     end
 
@@ -75,7 +74,7 @@ else
     end
     
     % Interpret pressure data
-    [~, dF_gap, P, X, p_gap] = pressureTranslator(p, pConfig);
+    [~, dF_gap, dF_int, P, X, p_gap] = pressureTranslator(p, pConfig);
     
 end
 
@@ -102,9 +101,10 @@ F     = F - shift*F./max(F);
 
 % Pressure correction
 F     = F - dF_gap;
+F     = F - dF_int;
 
 % Combine corrections to pass to function output
-corr = {shift, dF_gap, p_gap};
+corr = {shift, dF_gap, p_gap, dF_int};
 
 % --------------------------------------------------------------------
 % Final data preparation ---------------------------------------------

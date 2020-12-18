@@ -1,5 +1,5 @@
 function defaultPlots(name, Cd0, Re0, dCd, dCdp, Re_target, RMSE, RMSE_X,...
-    F, F_rms, F_power, p, T, Troom, pa, hum, Re, V, rho, nu, corr,...
+    F, F_rms, F_power, p, P, X, T, Troom, pa, hum, Re, V, rho, nu, corr,...
     colors, lines, markers)
 % ------------------------------------------------------------------------
 % Create default output plots and save to file
@@ -113,27 +113,197 @@ i=1;
 for k=idx
     
     figure;
-    b=bar([summary_F0(i)-summary_Fp0(i) summary_Fp0(i);...
-        summary_F1(i)-summary_Fp1(i) summary_Fp1(i)],...
+    b=bar([summary_F0(i)-summary_Fp0(i),...
+                        -summary_Fp0(i)*(summary_Fp0(i)<0),...
+                         summary_Fp0(i)*(summary_Fp0(i)>0);...
+           summary_F1(i)-summary_Fp1(i),...
+                        -summary_Fp1(i)*(summary_Fp1(i)<0),...
+                         summary_Fp1(i)*(summary_Fp1(i)>0)],...
         'stacked','FaceColor','flat');
     b(1).CData = [.1 .1 .5];
-    b(2).CData = [.8 .8 .8];
+    b(2).CData = [.3 .3 .1];
+    b(3).CData = [.8 .8 .8];
     ylim([0 Dmax*1.25]);
     ylabel('F [N]');
     grid minor;
     set(gca, 'XTickLabel', {'Ref', name{i}})
-    legend('Corrected drag', 'Pressure correction')
+    legend('Corrected drag', 'Pressure correction (+)', 'Pressure correction (-)')
     
     % Save
     set(gcf,'WindowStyle','normal');
     set(gcf, 'Units', 'pixels', 'Position', [10 10 800 600]);
     saveas(gcf, ['results' filesep num2str(i) '_' name{i} '.png']);
     set(gcf,'WindowStyle','docked');
-    close;
+%     close;
     
     i=i+1;
     
 end
+
+%% Pressure mappings
+
+% Pressure gradient details
+figure; hold on; box on; grid minor;
+title('Pressure gradient along test plate');
+xlabel('x [m]');
+ylabel('p [Pa]');
+
+i=1;
+for k=idx
+    for j=1:length(X{i})
+        
+        % Find pressure gradient data
+        idx_grad = find(abs(X{i}{j}(:,1)) ~= 445 & X{i}{j}(:,2) == 0);
+        [~, sortGrad] = sort(X{i}{j}(idx_grad,1));
+        idx_grad = idx_grad(sortGrad);
+         
+        if length(idx_grad) >= 2
+%             yPlot = P{i}{j}(:,idx_grad) ./ repmat(0.5.*rho{i}{j}.*V{i}{j}.^2, 1, length(idx_grad));
+            yPlot = P{i}{j}(:,idx_grad);
+            xPlot = X{i}{j}(idx_grad,1)/1000;
+
+            for l=1:size(yPlot,1)
+                if j==1 && l==2
+                    h(i) = plot(xPlot, yPlot(l,:), 'Color', c(i),...
+                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineStyle', 'none');
+                else
+                    plot(xPlot, yPlot(l,:), 'Color', c(i),...
+                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineStyle', 'none');
+                end
+                
+                % Fit linear pressure gradient
+                pGradFit{i}{j}{l} = polyfit(xPlot, yPlot(l,:), 1);
+                pGrad{i}{j}(l)    = pGradFit{i}{j}{l}(1); % For easy plotting
+                fitX    = [min(xPlot) max(xPlot)];
+                fitPlot = polyval(pGradFit{i}{j}{l}, fitX);
+                plot(fitX, fitPlot, '-', 'Color', c(i));
+                
+            end
+        end
+              
+    end
+    i=i+1;
+end
+legend(h,name(idx),'Location','South');
+
+% Pressure gradient summary
+figure; hold on; box on; grid minor;
+title('Pressure gradient along test plate');
+xlabel('Re [-]');
+ylabel('\Deltap/\Deltax [Pa/m]');
+
+i=1;
+for k=idx
+    for j=1:length(pGrad{i})
+
+        if j==1
+           h(i) = plot(Re0{i}{j}, pGrad{i}{j}(1:end-1),'Color', c(i),...
+                    'Marker', m(i), 'MarkerFaceColor', c(i)); 
+        else
+            plot(Re0{i}{j}, pGrad{i}{j}(1:end-1),'Color', c(i),...
+                    'Marker', m(i), 'MarkerFaceColor', c(i)); 
+        end
+        
+    end
+    i=i+1;
+end
+legend(h,name(idx),'Location','NorthWest');
+
+% Interior pressure map
+outlines{1} = [-.445, .1875;... % connector
+               -.445, -.1875;...
+               .445, -.1875;...
+               .445, .1875;...
+               -.445, .1875];
+outlines{2} = [.3615, .0245;... % air bearing pockets
+               .3615, .0795;...
+               .4385, .0795;...
+               .4385, .0245;...
+               .3615, .0245];
+outlines{3} = [ outlines{2}(:,1), -outlines{2}(:,2)];
+outlines{4} = [-outlines{2}(:,1),  outlines{2}(:,2)];
+outlines{5} = [-outlines{2}(:,1), -outlines{2}(:,2)];
+outlines{6} = [.063, .010;... % sensor pin pocket
+               .063, -.010;...
+               .107, -.010;...
+               .107, .010;...
+               .063, .010];
+outlines{7} = [.055, .005;... % sensor pin
+               .055, -.005;...
+               .065, -.005;...
+               .065, .005;...
+               .055, .005];
+outlines{8} = [-.103, .011;... % air piston pockets
+               -.103, -.011;...
+               -.081, -.011;...
+               -.081, .011;...
+               -.103, .011];
+alpha       = 30/360*2*pi;
+outlines{9} = [.046 + (-0.011) *cos(alpha) -  0.011   *sin(alpha), .080 + (-0.011) *sin(alpha) +   0.011  *cos(alpha);...
+               .046 + (-0.011) *cos(alpha) - (-0.011) *sin(alpha), .080 + (-0.011) *sin(alpha) + (-0.011) *cos(alpha);...
+               .046 +  0.011   *cos(alpha) - (-0.011) *sin(alpha), .080 +   0.011  *sin(alpha) + (-0.011) *cos(alpha);...
+               .046 +  0.011   *cos(alpha) -  0.011   *sin(alpha), .080 +   0.011  *sin(alpha) +   0.011  *cos(alpha);...
+               .046 + (-0.011) *cos(alpha) -  0.011   *sin(alpha), .080 + (-0.011) *sin(alpha) +   0.011  *cos(alpha)];
+outlines{10} = [outlines{9}(:,1), -outlines{9}(:,2)];
+
+i=1;
+for k=idx    
+    figure;
+    
+    for j=1:length(X{i})
+        
+        for l=size(P{i}{j},1)-1
+        
+            subplot(length(X{i}),1,j);
+            hold on; box on;
+            
+            if j==1
+                title(['Pressure map @ V_{max} (' name(i) ')']);
+            end
+
+            % Find streamwise gap pressures
+            idx_str  = find(abs(X{i}{j}(:,1)) ~= 445 & X{i}{j}(:,2) == -5);
+
+            % Find interior pressure data
+            idx_int = find(X{i}{j}(:,2) < -10);
+
+            % Plot pressure contour
+            levels = -100:5:100;
+            cmap_R1 = linspace(0.2, 0.7, 128);
+            cmap_R2 = linspace(0.7, 0.6, 128);
+            cmap_G1 = linspace(0.2, 0.7, 128);
+            cmap_G2 = linspace(0.7, 0.0, 128);
+            cmap_B1 = linspace(0.6, 0.7, 128);
+            cmap_B2 = linspace(0.7, 0.2, 128);
+            cmap = [cmap_R1', cmap_G1', cmap_B1'; cmap_R2', cmap_G2', cmap_B2'];
+
+            xq  = [-.445,  .445];
+            zq  = [-.1875, .1875];
+            xp  = X{i}{j}(idx_int,1);
+            zp  = X{i}{j}(idx_int,3);
+            [xq, zq] = meshgrid(xq, zq);
+            vq       = griddata(xp, zp, P{i}{j}(l,idx_int), xq, zq, 'natural');
+            [C, h]   = contourf(xq, zq, vq, levels);
+            caxis([levels(1) levels(end)]);
+            colormap(cmap);
+            clabel(C,h,levels);
+
+            % Draw connector outlines
+            for ii=1:length(outlines)
+                plot(outlines{ii}(:,1), outlines{ii}(:,2), 'k-', 'LineWidth', 1.5);
+            end
+
+            axis equal
+            xlabel('x [m]')
+            ylabel('z [m]')
+            xlim([-.5 .5])
+            ylim([-.25 .25])
+            
+        end
+        
+    end
+    i=i+1;
+end          
 
 
 %% Force power spectrum

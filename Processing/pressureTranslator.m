@@ -1,4 +1,4 @@
-function [q, dF_gap, P, X, p_gap] = pressureTranslator(p, pConfig)
+function [q, dF_gap, dF_int, P, X, p_gap] = pressureTranslator(p, pConfig)
 % ------------------------------------------------------------------------
 % Interprets pressure data from output files based on specified pressure
 % channel configuration. Configuration is read from excel file
@@ -50,7 +50,7 @@ p = p-p(1,:);
 % Correct for residual pressures at end of measurement
 p_shift  = p(end,:);
 p(end,:) = zeros(size(p(end,:)));
-p        = p - repmat(p_shift,size(p,1),1).*abs(p)./max(abs(p));
+p        = p - repmat(p_shift, size(p,1), 1) .* abs(p)./max(abs(p));
 
 % Extract pitot pressure
 if isnan(config(1))
@@ -84,13 +84,15 @@ else
     zTE_plot = X(X(:,1)==445,3)/1000;
 
     % --------------------------------------------------------------------
-    % Calculate pressure correction --------------------------------------
+    % Calculate gap pressure correction ----------------------------------
     % --------------------------------------------------------------------
 
     % Prepare
     idx = idx(2:end)-1;                    % Remove pitot from channels
     yq  = linspace(-10,0,5)/1000;          % Interpolation points y
-    zq  = linspace(-187.5,187.5,100)/1000; % Interpolation points z
+    zq  = linspace(-187.5,187.5,100)/1000; % Interpolation points z    
+    n1  = length(yq);
+    n2  = length(zq);
 
     % Vertical pressure gradient (check if the TE center taps are used)
     % --------------------------------------------------------------------
@@ -199,15 +201,13 @@ else
     for i=1:size(p_TE,1)
 
         p_int_TE{i} = interp1(z_TE/1000, p_TE(i,:), zq, 'spline', 'extrap');
-
-    %     p_int_TE{i} = repmat(p_int_TE{i}, length(yq), 1)...
-    %                     .* repmat(p_vert{i}', 1, length(zq));
         p_int_TE{i} = repmat(p_int_TE{i}, length(yq), 1)...
                         + repmat(p_vert{i}', 1, length(zq));                
 
     end
 
     % Pressure delta & drag correction
+    % --------------------------------------------------------------------
     dF_gap = zeros(length(p_int_TE),1);
     dp     = cell(length(p_int_TE),1);
     for i=1:length(p_int_TE)
@@ -220,17 +220,145 @@ else
     end
 
     dF_gap(isnan(dF_gap)) = 0;
+    
+    
+    % --------------------------------------------------------------------
+    % Calculate interior pressure correction -----------------------------
+    % --------------------------------------------------------------------
+    
+    % Find interior pressure data
+    dx      = 1e-3; % discretization [m]
+       
+    % Specify vertical surfaces
+    faceParams = [...
+    %    x_min   x_max    z_min   z_max  h     x-normal
+         .3615,  .3615,  .0245,  .0795, .004,  1;... % air bearing pockets (inside)
+         .3651,  .3651, -.0245, -.0795, .004,  1;...
+        -.3651, -.3651, -.0245, -.0795, .004, -1;...
+        -.3651, -.3651,  .0245,  .0795, .004, -1;...
+         .4385,  .4385,  .0245,  .0795, .004, -1;... % air bearing pockets (outside)
+         .4385,  .4385, -.0245, -.0795, .004, -1;...
+        -.4385, -.4385, -.0245, -.0795, .004,  1;...
+        -.4385, -.4385,  .0245,  .0795, .004,  1;...
+         .0630,  .0630, -.0100,  .0100, .004,  1;... % Sensor pin pocket
+         .1070,  .1070, -.0100,  .0100, .004, -1;...
+         .0550,  .0550, -.0050,  .0050, .010, -1;... % Sensor pin
+         .0650,  .0650, -.0050,  .0050, .010,  1;...
+        -.1030, -.1030, -.0110,  .0110, .004,  1;... % Air piston pockets (center)
+        -.0810, -.0810, -.0110,  .0110, .004, -1;...
+         .0310,  .0420, -.0840, -.0650, .004,  cos(30/360*2*pi);... % Air piston pockets (angled)
+         .0310,  .0500, -.0840, -.0950, .004,  sin(30/360*2*pi);...
+         .0610,  .0420, -.0760, -.0650, .004, -cos(30/360*2*pi);...
+         .0610,  .0500, -.0760, -.0950, .004, -sin(30/360*2*pi);...
+         .0310,  .0420,  .0840,  .0650, .004,  cos(30/360*2*pi);...
+         .0310,  .0500,  .0840,  .0950, .004,  sin(30/360*2*pi);...
+         .0610,  .0420,  .0760,  .0650, .004, -cos(30/360*2*pi);...
+         .0610,  .0500,  .0760,  .0950, .004, -sin(30/360*2*pi);...
+        ];
 
+    face = {}; % [x, z, h, x-normal]
+    i=1;
+    for k=1:size(faceParams,1)
+
+        % Streamwise-facing surfaces
+        if abs( faceParams(k,6) ) == 1
+            if faceParams(k,4) > faceParams(k,3)
+                z = faceParams(k,3) : dx : faceParams(k,4);
+            else
+                z = fliplr( faceParams(k,4) : dx : faceParams(k,3) );
+            end
+
+            face{i}(:,1) = faceParams(k,1) * ones(size(z));
+            face{i}(:,2) = z;
+            face{i}(:,3) = faceParams(k,5) * ones(size(z));
+            face{i}(:,4) = faceParams(k,6) * ones(size(z));
+        
+        % Other surfaces
+        else
+            n = floor( sqrt( (faceParams(k,2)-faceParams(k,1))^2 ...
+                            +(faceParams(k,4)-faceParams(k,3))^2 )/dx );
+            dx_x = abs(faceParams(k,2)-faceParams(k,1)) / n;
+            dx_z = abs(faceParams(k,4)-faceParams(k,3)) / n;
+            
+            if faceParams(k,2) > faceParams(k,1)
+                face{i}(:,1) = faceParams(k,1) : dx_x : faceParams(k,2);
+            else
+                face{i}(:,1) = fliplr( faceParams(k,2) : dx_x : faceParams(k,1) );
+            end
+            
+            if faceParams(k,4) > faceParams(k,3)
+                face{i}(:,2) = faceParams(k,3) : dx_z : faceParams(k,4);
+            else
+                face{i}(:,2) = fliplr( faceParams(k,4) : dx_z : faceParams(k,3) );
+            end
+            
+            face{i}(:,3) = faceParams(k,5) * ones(n+1,1);
+            face{i}(:,4) = faceParams(k,6) * ones(n+1,1);
+        end
+        
+        % Discretized face centers
+        face_center{i}(:,1) = (face{i}(1:end-1,1) + face{i}(2:end,1)) / 2;
+        face_center{i}(:,2)  = (face{i}(1:end-1,2) + face{i}(2:end,2)) / 2;
+        face_center{i}(:,3)  = face{i}(1:end-1,3);
+        face_center{i}(:,4)  = face{i}(1:end-1,4);
+
+        i=i+1;
+    end
+    
+%     % Show configuration (optional)
+%     figure; hold on; box on; axis equal;
+%     title('Interior faces used in correction')
+%     xlim([-.5 .5]);
+%     ylim([-.2 ,.2]);
+%     for i=1:length(faces)
+%         
+%         if faces{i}(1,4) > 0
+%             cDir = 'r';
+%             
+%         else
+%             cDir = 'b';
+%         end
+%         
+%         plot(face{i}(:,1),face{i}(:,2),'-', 'Color', cDir)
+%         plot(face_center{i}(:,1),face_center{i}(:,2),'k.', 'Color', cDir)
+%         
+%     end
+    
+    % Calculate pressure correction
+    idx_int = find(X(:,2) < -10);
+    x_int   = X(idx_int,1)';
+    z_int   = X(idx_int,3);
+    p_int   = P(:,idx_int);
+%     [x_int, z_int] = meshgrid(x_int, z_int);
+    
+    
+    dF_int = zeros(size(P,1),1);
+    for i=1:length(face)
+        
+        for j=1:size(P,1)
+            
+            % Pressure on the face for each velocity
+            pFace = griddata(x_int, z_int, p_int(j,:), face_center{i}(:,1), face_center{i}(:,2));
+            
+            % Add drag contribution of this face to correction
+            h    = face_center{i}(:,3);
+            norm = face_center{i}(:,4);
+            dF_int(j) = dF_int(j) + sum(pFace .* (dx*h) .* norm);
+        end
+    end
+    
+    % --------------------------------------------------------------------
     % Plot gap pressures
+    % --------------------------------------------------------------------
     figure; 
     levels = -100:10:100;
 
-    cmap_R1 = linspace(0.2, 0.3, 128);
-    cmap_G1 = linspace(0.2, 0.3, 128);
-    cmap_B1 = linspace(0.6, 0.3, 128);
-    cmap_R2 = linspace(0.3, 0.6, 128);
-    cmap_G2 = linspace(0.3, 0.0, 128);
-    cmap_B2 = linspace(0.3, 0.2, 128);
+    cmap_R1 = linspace(0.2, 0.7, 128);
+    cmap_R2 = linspace(0.7, 0.6, 128);
+    cmap_G1 = linspace(0.2, 0.7, 128);
+    cmap_G2 = linspace(0.7, 0.0, 128);
+    cmap_B1 = linspace(0.6, 0.7, 128);
+    cmap_B2 = linspace(0.7, 0.2, 128);
     cmap = [cmap_R1', cmap_G1', cmap_B1'; cmap_R2', cmap_G2', cmap_B2'];
 
     subplot(3,1,1); box on; ylabel('y [m]'); hold on;
@@ -269,8 +397,6 @@ else
     X2 = zeros(length(zq)*length(yq),3);
     X3 = X2;
 
-    n1 = size(p_int_TE{i},1);
-    n2 = size(p_int_TE{i},2);
     for j=1:n1
         for k=1:n2
 

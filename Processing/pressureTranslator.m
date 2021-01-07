@@ -328,64 +328,67 @@ else
     
     % Calculate pressure correction
     idx_int = find(X(:,2) < -10);
+    dF_int = zeros(size(P,1),1);
     x_int   = X(idx_int,1)';
     z_int   = X(idx_int,3);
     p_int   = P(:,idx_int);
 %     [x_int, z_int] = meshgrid(x_int, z_int);
     
-    
-    dF_int = zeros(size(P,1),1);
-    for i=1:length(face)
-        
-        for j=1:size(P,1)
-            
-            % Pressure on the face for each velocity
-            pFace = griddata(x_int, z_int, p_int(j,:), face_center{i}(:,1), face_center{i}(:,2));
-            
-            % Add drag contribution of this face to correction
-            h    = face_center{i}(:,3);
-            norm = face_center{i}(:,4);
-            dF_int(j) = dF_int(j) + sum(pFace .* (dx*h) .* norm);
+    if length(idx_int) >= 3 % need at least 3 points for 2D map
+
+        for i=1:length(face)
+
+            for j=1:size(P,1)
+
+                % Pressure on the face for each velocity
+                pFace = griddata(x_int, z_int, p_int(j,:), face_center{i}(:,1), face_center{i}(:,2));
+
+                % Add drag contribution of this face to correction
+                h    = face_center{i}(:,3);
+                norm = face_center{i}(:,4);
+                dF_int(j) = dF_int(j) + sum(pFace .* (dx*h) .* norm);
+            end
         end
+        
+        % --------------------------------------------------------------------
+        % Plot gap pressures
+        % --------------------------------------------------------------------
+        figure; 
+        levels = -100:10:100;
+
+        cmap_R1 = linspace(0.2, 0.7, 128);
+        cmap_R2 = linspace(0.7, 0.6, 128);
+        cmap_G1 = linspace(0.2, 0.7, 128);
+        cmap_G2 = linspace(0.7, 0.0, 128);
+        cmap_B1 = linspace(0.6, 0.7, 128);
+        cmap_B2 = linspace(0.7, 0.2, 128);
+        cmap = [cmap_R1', cmap_G1', cmap_B1'; cmap_R2', cmap_G2', cmap_B2'];
+
+        subplot(3,1,1); box on; ylabel('y [m]'); hold on;
+        [C1, h1] = contourf(zq, yq', p_int_LE{end-1}, levels);
+        scatter(zLE_plot, yLE_plot, 10, 'w');
+        title('LE gap p [Pa]'); 
+        caxis([levels(1) levels(end)]);
+        colormap(cmap);
+
+        subplot(3,1,2); box on; ylabel('y [m]'); hold on;
+        [C2, h2] = contourf(zq, yq, p_int_TE{end-1}, levels);
+        scatter(zTE_plot, yTE_plot, 10, 'w');
+        title('TE gap p [Pa]'); 
+        caxis([levels(1) levels(end)]);
+        colormap(cmap);
+
+        subplot(3,1,3); box on; ylabel('y [m]'); xlabel('z [m]'); hold on;
+        [C3, h3] = contourf(zq, yq, dp{end-1}, levels);
+        title('\Delta p [Pa]'); 
+        caxis([levels(1) levels(end)]);
+        colormap(cmap);
+
+        clabel(C1,h1,levels);
+        clabel(C2,h2,levels);
+        clabel(C3,h3,levels);
+
     end
-    
-    % --------------------------------------------------------------------
-    % Plot gap pressures
-    % --------------------------------------------------------------------
-    figure; 
-    levels = -100:10:100;
-
-    cmap_R1 = linspace(0.2, 0.7, 128);
-    cmap_R2 = linspace(0.7, 0.6, 128);
-    cmap_G1 = linspace(0.2, 0.7, 128);
-    cmap_G2 = linspace(0.7, 0.0, 128);
-    cmap_B1 = linspace(0.6, 0.7, 128);
-    cmap_B2 = linspace(0.7, 0.2, 128);
-    cmap = [cmap_R1', cmap_G1', cmap_B1'; cmap_R2', cmap_G2', cmap_B2'];
-
-    subplot(3,1,1); box on; ylabel('y [m]'); hold on;
-    [C1, h1] = contourf(zq, yq', p_int_LE{end-1}, levels);
-    scatter(zLE_plot, yLE_plot, 10, 'w');
-    title('LE gap p [Pa]'); 
-    caxis([levels(1) levels(end)]);
-    colormap(cmap);
-
-    subplot(3,1,2); box on; ylabel('y [m]'); hold on;
-    [C2, h2] = contourf(zq, yq, p_int_TE{end-1}, levels);
-    scatter(zTE_plot, yTE_plot, 10, 'w');
-    title('TE gap p [Pa]'); 
-    caxis([levels(1) levels(end)]);
-    colormap(cmap);
-
-    subplot(3,1,3); box on; ylabel('y [m]'); xlabel('z [m]'); hold on;
-    [C3, h3] = contourf(zq, yq, dp{end-1}, levels);
-    title('\Delta p [Pa]'); 
-    caxis([levels(1) levels(end)]);
-    colormap(cmap);
-
-    clabel(C1,h1,levels);
-    clabel(C2,h2,levels);
-    clabel(C3,h3,levels);
 
     % --------------------------------------------------------------------
     % Substitute interpolated data in output -----------------------------

@@ -277,16 +277,18 @@ for k=idx
             cmap_B2 = linspace(0.7, 0.2, 128);
             cmap = [cmap_R1', cmap_G1', cmap_B1'; cmap_R2', cmap_G2', cmap_B2'];
 
-            xq  = [-.445,  .445];
-            zq  = [-.1875, .1875];
-            xp  = X{i}{j}(idx_int,1);
-            zp  = X{i}{j}(idx_int,3);
-            [xq, zq] = meshgrid(xq, zq);
-            vq       = griddata(xp, zp, P{i}{j}(l,idx_int), xq, zq, 'natural');
-            [C, h]   = contourf(xq, zq, vq, levels);
-            caxis([levels(1) levels(end)]);
-            colormap(cmap);
-            clabel(C,h,levels);
+            if length(idx_int) >= 3 % need at least 3 points for 2D map
+                xq  = [-.445,  .445];
+                zq  = [-.1875, .1875];
+                xp  = X{i}{j}(idx_int,1);
+                zp  = X{i}{j}(idx_int,3);
+                [xq, zq] = meshgrid(xq, zq);
+                vq       = griddata(xp, zp, P{i}{j}(l,idx_int), xq, zq, 'natural');
+                [C, h]   = contourf(xq, zq, vq, levels);
+                caxis([levels(1) levels(end)]);
+                colormap(cmap);
+                clabel(C,h,levels);
+            end
 
             % Draw connector outlines
             for ii=1:length(outlines)
@@ -736,7 +738,7 @@ if exist('pressureCorrectionsAvailable','var')
     legend(h,name(idx),'Location','SouthWest');
     plot([-0.1*xMax 1.1*xMax],[0 0],'k-','LineWidth',3);
     xlim([-0.1*xMax 1.1*xMax]);
-    ylim([-5 5]);
+    ylim([-10 10]);
 
 end
 

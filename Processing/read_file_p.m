@@ -7,6 +7,9 @@ function [p, p_rms, p_power, p_raw] = read_file_p(fileName, sampleTime)
         
     data   = importdata(fileName);                      % import
     %data   = data*100;                                  % mbar to Pa
+    
+    % Clean NaN if present
+    data(isnan(data)) = 0;
 
     % Separate measurements via empty rows
     filter = [0; find(sum(abs(data),2) == 0)];
@@ -39,9 +42,9 @@ function [p, p_rms, p_power, p_raw] = read_file_p(fileName, sampleTime)
                 [power, f] = findpeaks(power,f','MinPeakProminence',0.1);
                 p_power{i,j} = [f, power];      % Store in output
             else
-                warning(['Pressure data absent in ' fileName]);
                 p_power{i,j} = [];
             end
+
         end
     end
     

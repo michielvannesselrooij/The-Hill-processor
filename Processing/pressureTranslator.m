@@ -21,6 +21,7 @@ function [q, dF_gap, dF_int, P, X, p_gap] = pressureTranslator(p, pConfig)
 if p==0
     q      = 0;
     dF_gap = 0;
+    dF_int = 0;
     P      = 0;
     X      = 0;
     p_gap  = 0;
@@ -66,6 +67,7 @@ idx      = find(~isnan(config));    % Find active pressure taps
 if length(idx)<2
     dF_gap = 0;
     p_gap  = 0;
+    dF_int = 0;
     P      = [];
     X      = [];
     

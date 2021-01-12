@@ -134,7 +134,7 @@ for k=idx
     set(gcf, 'Units', 'pixels', 'Position', [10 10 800 600]);
     saveas(gcf, ['results' filesep num2str(i) '_' name{i} '.png']);
     set(gcf,'WindowStyle','docked');
-%     close;
+    close;
     
     i=i+1;
     
@@ -196,12 +196,15 @@ i=1;
 for k=idx
     for j=1:length(pGrad{i})
 
-        if j==1
+        if j==2
            h(i) = plot(Re0{i}{j}, pGrad{i}{j}(1:end-1),'Color', c(i),...
-                    'Marker', m(i), 'MarkerFaceColor', c(i)); 
+                    'Marker', m(i), 'MarkerFaceColor', c(i),'LineWidth',1.5); 
+        elseif j/2 == floor(j/2) % Ref plates
+            plot(Re0{i}{j}, pGrad{i}{j}(1:end-1), ':','Color', c(i),...
+                    'Marker', m(i)); 
         else
             plot(Re0{i}{j}, pGrad{i}{j}(1:end-1),'Color', c(i),...
-                    'Marker', m(i), 'MarkerFaceColor', c(i)); 
+                    'Marker', m(i), 'MarkerFaceColor', c(i),'LineWidth',1.5); 
         end
         
     end
@@ -462,6 +465,9 @@ plot([-0.1*xMax 1.1*xMax],[0 0],'k-','LineWidth',3);
 xlim([-0.1*xMax 1.1*xMax]);
 ylim([ -10 10]);
 
+% Store for dashboard
+ax_null = gca;
+
 %% Gap pressures
 
 figure;
@@ -479,9 +485,9 @@ for k=idx
             pressureCorrectionsAvailable = 1;
             if j==2
                 h1(i) = plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,2), lines{i}, 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i));
+                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineWidth', 1.5);
                 h2(i) = plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,1), ':', 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i));
+                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineWidth', 1.5);
 
             elseif j==3
                 h3(i) = plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,2), lines{i}, 'Color', c(i), ...
@@ -491,9 +497,9 @@ for k=idx
 
             elseif j/2 == floor(j/2)
                 plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,2), lines{i}, 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i));
+                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineWidth', 1.5);
                 plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,1), ':', 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i));
+                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineWidth', 1.5);
 
             else
                 plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,2), lines{i}, 'Color', c(i), ...
@@ -653,6 +659,9 @@ if exist('pressureCorrectionsAvailable','var')
 
 end
 
+% Store for dashboard
+ax_pcorr = gca;
+
 %% Force
 
 figure;
@@ -742,6 +751,9 @@ if exist('pressureCorrectionsAvailable','var')
 
 end
 
+% Store for dashboard
+ax_uncorr = gca;
+
 %% Cd delta
 
 figure;
@@ -771,7 +783,10 @@ end
 legend(h,name(idx),'Location','SouthWest');
 plot([-0.1*xMax 1.1*xMax],[0 0],'k-','LineWidth',3);
 xlim([-0.1*xMax 1.1*xMax]);
-ylim([-5 5]);
+ylim([-10 10]);
+
+% Store for dashboard
+ax_main = gca;
 
 %% Cd delta (averaged)
 
@@ -807,7 +822,7 @@ end
 legend(h,name(idx),'Location','EastOutside');
 plot([-0.1*xMax 1.1*xMax],[0 0],'k-','LineWidth',3);
 xlim([-0.1*xMax 1.1*xMax]);
-ylim([-5 5]);
+ylim([-10 10]);
 
 %% Delta bar chart
 dF_atMax = deltaBarChart(Re_target(idx), dCdp(idx), name(idx));
@@ -840,5 +855,70 @@ for k=idx
     i=i+1;
 end
 legend(h,name(idx),'Location','NorthEast');
+
+% Store for dashboard
+ax_rmse = gca;
+
+%% Dashboard figure
+figure;
+s1 = subplot(4,2,1);
+    title('RMSE')
+    box on;
+    grid minor;
+    xlim([-0.1*xMax 1.1*xMax]);
+    ylim([0 5]);
+    ylabel('\Delta C_D [%]')
+s2 = subplot(4,2,2);
+    title('w/o Pressure correction')
+    box on;
+    grid minor;
+    xlim([-0.1*xMax 1.1*xMax]);
+    ylim([-10 10]);
+s3 = subplot(4,2,3);
+    title('Null force correction')
+    box on;
+    grid minor;
+    xlim([-0.1*xMax 1.1*xMax]);
+    ylim([-5 5]);
+    xlabel('Re_1 [-]')
+    ylabel('\Delta C_D [%]')
+s4 = subplot(4,2,4);
+    title('Pressure correction')
+    box on;
+    grid minor;
+    xlim([-0.1*xMax 1.1*xMax]);
+    ylim([-10 10]);
+    xlabel('Re_1 [-]')
+    ylabel('\Delta C_D [%]')
+s5 = subplot(4,2,[5:8]);
+    title('Final result')
+    box on;
+    grid minor;
+    xlim([-0.1*xMax 1.1*xMax]);
+    ylim([-10 10]);
+    xlabel('Re_1 [-]')
+
+fig1 = get(ax_rmse,'children');
+fig2 = get(ax_uncorr,'children');
+fig3 = get(ax_null,'children');
+fig4 = get(ax_pcorr,'children');
+fig5 = get(ax_main,'children');
+
+copyobj(fig1,s1);
+copyobj(fig2,s2);
+copyobj(fig3,s3);
+copyobj(fig4,s4);
+copyobj(fig5,s5);
+
+leg_idx = [];
+ii=1;
+for i=1:length(fig5)
+    if ~isempty(fig5(i).DisplayName)
+        leg_idx(ii) = i;
+        ii=ii+1;
+    end
+end
+
+legend(s5,fig5(leg_idx),'Location','SouthOutside')
 
 end

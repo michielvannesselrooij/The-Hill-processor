@@ -61,12 +61,12 @@ for i = 1:N
 end
 
 % Make default plots
+BLplots(name, y, u, u_rms, u_power, nu_avg, ut, y0, k, B, PI, d, d_star,...
+    theta, H, up_model, yp_model, V, dCdp);
+
 defaultPlots(name, Cd0, Re0, dCd, dCdp, Re_target, RMSE, RMSE_X, F, F_rms,...
     F_power, p, P, X, T, Troom, pa, hum, Re, V, rho, nu, corr, colors,...
     lines, markers);
-
-BLplots(name, y, u, u_rms, u_power, nu_avg, ut, y0, k, B, PI, d, d_star,...
-    theta, H, up_model, yp_model, V, dCdp);
 
 % Save figures to file
 % saveAllFigures

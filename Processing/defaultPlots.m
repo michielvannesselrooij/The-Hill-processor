@@ -866,7 +866,7 @@ s1 = subplot(4,2,1);
     box on;
     grid minor;
     xlim([-0.1*xMax 1.1*xMax]);
-    ylim([0 5]);
+    ylim([0 2]);
     ylabel('\Delta C_D [%]')
 s2 = subplot(4,2,2);
     title('w/o Pressure correction')
@@ -919,6 +919,6 @@ for i=1:length(fig5)
     end
 end
 
-legend(s5,fig5(leg_idx),'Location','SouthOutside')
+legend(s5,flipud(fig5(leg_idx)),'Location','SouthOutside')
 
 end

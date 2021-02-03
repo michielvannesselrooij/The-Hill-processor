@@ -163,19 +163,23 @@ for k=idx
             xPlot = X{i}{j}(idx_grad,1)/1000;
 
             for l=1:size(yPlot,1)
+                
+                % Plot pressure gradient data points
                 if j==1 && l==2
-                    h(i) = plot(xPlot, yPlot(l,:), 'Color', c(i),...
+                    h(i) = plot(xPlot, yPlot(l,:)', 'Color', c(i),...
                     'Marker', m(i), 'MarkerFaceColor', c(i), 'LineStyle', 'none');
                 else
-                    plot(xPlot, yPlot(l,:), 'Color', c(i),...
+                    plot(xPlot, yPlot(l,:)', 'Color', c(i),...
                     'Marker', m(i), 'MarkerFaceColor', c(i), 'LineStyle', 'none');
                 end
                 
                 % Fit linear pressure gradient
-                pGradFit{i}{j}{l} = polyfit(xPlot, yPlot(l,:), 1);
+                pGradFit{i}{j}{l} = polyfit(xPlot, yPlot(l,:)', 1);
                 pGrad{i}{j}(l)    = pGradFit{i}{j}{l}(1); % For easy plotting
-                fitX    = [min(xPlot) max(xPlot)];
-                fitPlot = polyval(pGradFit{i}{j}{l}, fitX);
+                fitX              = [min(xPlot) max(xPlot)];
+                fitPlot           = polyval(pGradFit{i}{j}{l}, fitX);
+                
+                % Plot fitted pressure gradient
                 plot(fitX, fitPlot, '-', 'Color', c(i));
                 
             end

@@ -1,7 +1,7 @@
 function [name, Cd0, Re0, dCd, dCdp, Re_target, RMSE, RMSE_X, F, F_rms,...
     F_power, p, P, X, T, Troom, pa, hum, Re, V, rho, nu, nu_avg, corr, y,...
     u, u_rms, u_power, ut, y0, k, B, PI, d, d_star, theta, H, up_model,...
-    yp_model] = importFromMastersheet(id, forceFileRead)
+    yp_model] = importFromMastersheet(id, forceFileRead, costum_name)
 % ------------------------------------------------------------------------
 % Read the set of measurements referenced by the specified id in the
 % measurement mastersheet. See TheHill_Mastersheet.xlsx.
@@ -44,6 +44,13 @@ qChannel        = data{14}; % Pitot pressure channel
 Re_corr         = data{15}; % Reynolds correction factor
 if isnan(Re_corr)
     Re_corr = 0;
+end
+
+% Use custom name if given
+if exist('custom_name','var')
+    if ~isempty(costum_name)
+        name = costum_name;
+    end
 end
 
 % Check if data folder exists

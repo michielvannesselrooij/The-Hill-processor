@@ -115,8 +115,8 @@ else
         end
 
         % Replace center measurements with their average
-        P(:,[lower upper]) = [];
-        P = [P pmean];
+        P(:,upper) = pmean;
+        P(:,lower) = [];
         X(upper,2) = -5;
         X(lower,:) = [];
 

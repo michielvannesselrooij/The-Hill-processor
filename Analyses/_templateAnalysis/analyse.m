@@ -44,9 +44,10 @@ for i = 1:N
     end
 end
 
-colors  = setup(2:N+1,4);
-lines   = setup(2:N+1,5);
-markers = setup(2:N+1,6);
+colors      = setup(2:N+1,4);
+lines       = setup(2:N+1,5);
+markers     = setup(2:N+1,6);
+costum_name = setup(2:N+1,7);
 
 % Import data via mastersheet
 for i = 1:N
@@ -56,7 +57,7 @@ for i = 1:N
         Troom{i}, pa{i}, hum{i}, Re{i}, V{i}, rho{i}, nu{i}, nu_avg{i},...
         corr{i}, y{i}, u{i}, u_rms{i}, u_power{i}, ut{i}, y0{i}, k{i},...
         B{i}, PI{i}, d{i}, d_star{i}, theta{i}, H{i}, up_model{i},...
-        yp_model{i}] = importFromMastersheet(id(i), forceFileRead(i));
+        yp_model{i}] = importFromMastersheet(id(i), forceFileRead(i), costum_name{i});
     
 end
 
@@ -69,7 +70,7 @@ defaultPlots(name, Cd0, Re0, dCd, dCdp, Re_target, RMSE, RMSE_X, F, F_rms,...
     lines, markers);
 
 % Save figures to file
-% saveAllFigures
+saveAllFigures
 
 %% CUSTOM CODE
 

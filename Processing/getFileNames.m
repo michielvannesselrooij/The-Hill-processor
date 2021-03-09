@@ -24,11 +24,18 @@ function [files] = getFileNames(folder)
                 files2{i} = [files(i).name(1:end-4) '.csv'];
             end
         
-        % If those also don't exist, tell the user and abort    
+        % If those also don't exist, tell the user and abort if no hotwire    
         else
-            warning(['There are no suitable drag measurement files in folder ' folder]);
-            files = [];
-            return
+            if isempty(dir([folder filesep 'hotwire']))
+                error(['There are no suitable drag measurement files in folder ' folder]);
+                
+            else
+                warning(['There are no suitable drag measurement files in folder ' folder]);
+            end
+            
+           files = [];
+           return
+           
         end
 
     end

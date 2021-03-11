@@ -39,6 +39,8 @@ F  = cell(size(files));
 F_rms = cell(size(files));
 F_power = cell(size(files));
 p = cell(size(files));
+P = cell(size(files));
+X = cell(size(files));
 T = cell(size(files));
 Troom = cell(size(files));
 pa = cell(size(files));
@@ -205,6 +207,7 @@ if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files
                 str = erase(ignoreFile.name, '.txt');
                 idx = strfind(str, 'ignore_') + 7;
                 ignore = str2double(str(idx:end));
+                disp(['Ignoring first ' num2str(ignore) ' data points']);
             end
             
             % Process data

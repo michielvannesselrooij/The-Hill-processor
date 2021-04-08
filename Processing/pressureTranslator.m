@@ -188,11 +188,11 @@ else
 
         p_int_LE{i} = interp1(z_LE/1000, p_LE(i,:), zq, 'spline', 'extrap');
 
-    %     p_int_LE{i} = repmat(p_int_LE{i}, length(yq), 1)...
-    %                     .* repmat(p_vert{i}', 1, length(zq));
+        p_int_LE{i} = repmat(p_int_LE{i}, length(yq), 1)...
+                        .* repmat(p_vert{i}', 1, length(zq));
 
         % Don't use vertical gradient for LE
-        p_int_LE{i} = repmat(p_int_LE{i}, length(yq), 1); 
+%         p_int_LE{i} = repmat(p_int_LE{i}, length(yq), 1); 
 
     end
 
@@ -204,7 +204,7 @@ else
 
         p_int_TE{i} = interp1(z_TE/1000, p_TE(i,:), zq, 'spline', 'extrap');
         p_int_TE{i} = repmat(p_int_TE{i}, length(yq), 1)...
-                        + repmat(p_vert{i}', 1, length(zq));                
+                        .* repmat(p_vert{i}', 1, length(zq));                
 
     end
 
@@ -407,18 +407,10 @@ else
 
             for i=1:length(p_int_TE)
                 P2(i,(j-1)*n2+k) = p_int_TE{i}(j,k);
-            end
-            X2((j-1)*n2+k,:) = [445, yq(j), zq(k)];
-
-        end
-    end
-
-    for j=1:n1
-        for k=1:n2
-
-            for i=1:length(p_int_LE)
                 P3(i,(j-1)*n2+k) = p_int_LE{i}(j,k);
             end
+            
+            X2((j-1)*n2+k,:) = [ 445, yq(j), zq(k)];
             X3((j-1)*n2+k,:) = [-445, yq(j), zq(k)];
 
         end

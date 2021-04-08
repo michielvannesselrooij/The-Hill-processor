@@ -91,17 +91,18 @@ end
 % --------------------------------------------------------------------
 
 % Correct q based on pitot position
-% q     = q_Mensor;
-q     = q - q(end)*q./max(q);
-q     = q*(1+Re_corr);
+% q      = q_Mensor;
+q      = q - q(end)*q./max(q);
+q      = q*(1+Re_corr);
 
 % Null shift correction of force measurement
-shift = F(end)-F(1);
-F     = F - shift*F./max(F);
+shift  = -(F(end)-F(1)) * F./max(F);
+F      = F + shift;
+F(end) = F(1);
 
 % Pressure correction
-F     = F - dF_gap;
-F     = F - dF_int;
+F      = F - dF_gap;
+F      = F - dF_int;
 
 % Combine corrections to pass to function output
 corr = {shift, dF_gap, p_gap, dF_int};

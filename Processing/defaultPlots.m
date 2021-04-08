@@ -275,7 +275,7 @@ for k=idx
             idx_int = find(X{i}{j}(:,2) < -10);
 
             % Plot pressure contour
-            levels = -100:5:100;
+            levels = -100:1:100;
             cmap_R1 = linspace(0.2, 0.7, 128);
             cmap_R2 = linspace(0.7, 0.6, 128);
             cmap_G1 = linspace(0.2, 0.7, 128);
@@ -432,31 +432,20 @@ title('Null force shift correction');
 xlabel('Re_1 [-]')
 ylabel('\Delta C_D [%]')
 
-% Compute null shift drag delta's
-dF_shift = cell(N);
 i=1;
 for k=idx
-    F_shift = cell(size(corr{i}));
     for j=1:length(corr{i})
-        F_shift_0 = corr{i}{j}{1};
-        F_shift{j} = - F_shift_0*F{i}{j}./max(F{i}{j});
-    end
-    [~, ~, dF_shift{i}] = dragDelta(F_shift, Re0{i}, 1:1:length(Re0{i}{1}));
-    
-    i=i+1;
-end
-
-i=1;
-for k=idx
-    for j=1:length(dF_shift{i})
         
-        dF_shift_p = -dF_shift{i}{j} ./ (F{i}{j}(1:end-1)-F{i}{j}(1)) * 100;
+        dF_shift_p = corr{i}{j}{1}(2:end-1) ./ (F{i}{j}(2:end-1)-F{i}{j}(1)) * 100;
         
-        if j==1
-            h(i) = plot(Re0{i}{j}, dF_shift_p, lines{i}, 'Color', c(i), ...
+        if j==2
+            h(i) = plot(Re0{i}{j}(2:end), dF_shift_p, lines{i}, 'Color', c(i), ...
                 'Marker', m(i), 'MarkerFaceColor', c(i));
+        elseif j/2 ~= floor(j/2)
+            plot(Re0{i}{j}(2:end), dF_shift_p, lines{i}, 'Color', c(i), ...
+                'Marker', m(i));
         else
-            plot(Re0{i}{j}, dF_shift_p, lines{i}, 'Color', c(i), ...
+            plot(Re0{i}{j}(2:end), dF_shift_p, lines{i}, 'Color', c(i), ...
                 'Marker', m(i), 'MarkerFaceColor', c(i));
         end
         

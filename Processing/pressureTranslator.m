@@ -51,7 +51,7 @@ p = p-p(1,:);
 % Correct for residual pressures at end of measurement
 p_shift  = p(end,:);
 p(end,:) = zeros(size(p(end,:)));
-p        = p - repmat(p_shift, size(p,1), 1) .* abs(p)./max(abs(p));
+p        = p - repmat(p_shift, size(p,1), 1) .* p./p(end-1,:);
 
 % Extract pitot pressure
 if isnan(config(1))

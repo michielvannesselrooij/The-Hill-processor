@@ -458,6 +458,51 @@ plot([-0.1*xMax 1.1*xMax],[0 0],'k-','LineWidth',3);
 xlim([-0.1*xMax 1.1*xMax]);
 ylim([ -10 10]);
 
+%% Null force shift correction (delta)
+
+figure;
+hold on;
+box on;
+grid minor;
+title('Null force shift correction (delta)');
+xlabel('Re_1 [-]')
+ylabel('\Delta C_D [%]')
+
+
+% Calculate delta in null shift
+i=1;
+for k=idx
+    F_shift = cell(size(corr{i}));
+    for j=1:length(corr{i})
+        F_shift{j} = corr{i}{j}{1}(1:end-1);
+    end
+    [~, ~, dF_shift{i}] = dragDelta(F_shift, Re0{i}, 1:1:length(Re0{i}{1}));
+    i=i+1;
+end
+
+i=1;
+for k=idx
+    for j=1:length(dF_shift{i})
+        
+        dF_shift_p = dF_shift{i}{j}(2:end) ./ (F{i}{j}(2:end-1)-F{i}{j}(1)) * 100;
+        
+        if j==1
+            h(i) = plot(Re0{i}{j}(2:end), dF_shift_p, lines{i}, 'Color', c(i), ...
+                'Marker', m(i), 'MarkerFaceColor', c(i));
+        else
+            plot(Re0{i}{j}(2:end), dF_shift_p, lines{i}, 'Color', c(i), ...
+                'Marker', m(i), 'MarkerFaceColor', c(i));
+        end
+        
+    end
+    i=i+1;
+end
+
+legend(h,name(idx),'Location','EastOutside');
+plot([-0.1*xMax 1.1*xMax],[0 0],'k-','LineWidth',3);
+xlim([-0.1*xMax 1.1*xMax]);
+ylim([ -5 5]);
+
 % Store for dashboard
 ax_null = gca;
 
@@ -872,7 +917,7 @@ s3 = subplot(4,2,3);
     box on;
     grid minor;
     xlim([-0.1*xMax 1.1*xMax]);
-    ylim([-10 10]);
+    ylim([-5 5]);
     xlabel('Re_1 [-]')
     ylabel('\Delta C_D [%]')
 s4 = subplot(4,2,4);

@@ -872,7 +872,7 @@ s3 = subplot(4,2,3);
     box on;
     grid minor;
     xlim([-0.1*xMax 1.1*xMax]);
-    ylim([-5 5]);
+    ylim([-10 10]);
     xlabel('Re_1 [-]')
     ylabel('\Delta C_D [%]')
 s4 = subplot(4,2,4);

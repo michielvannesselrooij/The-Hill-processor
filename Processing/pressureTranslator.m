@@ -51,7 +51,7 @@ p = p-p(1,:);
 % Correct for residual pressures at end of measurement
 p_shift  = p(end,:);
 p(end,:) = zeros(size(p(end,:)));
-p        = p - repmat(p_shift, size(p,1), 1) .* p./p(end-1,:);
+p        = p - repmat(p_shift, size(p,1), 1) .* abs(p)./max(abs(p));
 
 % Extract pitot pressure
 if isnan(config(1))
@@ -204,7 +204,7 @@ else
 
         p_int_TE{i} = interp1(z_TE/1000, p_TE(i,:), zq, 'spline', 'extrap');
         p_int_TE{i} = repmat(p_int_TE{i}, length(yq), 1)...
-                        .* repmat(p_vert{i}', 1, length(zq));                
+                        .* repmat(p_vert{i}', 1, length(zq));
 
     end
 

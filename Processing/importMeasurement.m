@@ -96,7 +96,7 @@ q      = q - q(end)*q./max(q);
 q      = q*(1+Re_corr);
 
 % Null shift correction of force measurement
-shift  = -(F(end)-F(1)) * F./max(F);
+shift  = -(F(end)-F(1)) * (F-F(1))./(max(F)-F(1));
 F      = F + shift;
 F(end) = F(1);
 

@@ -430,22 +430,22 @@ box on;
 grid minor;
 title('Null force shift correction');
 xlabel('Re_1 [-]')
-ylabel('\Delta C_D [%]')
+ylabel('\Delta F_{null} [%]')
 
 i=1;
 for k=idx
     for j=1:length(corr{i})
         
-        dF_shift_p = corr{i}{j}{1}(2:end-1) ./ (F{i}{j}(2:end-1)-F{i}{j}(1)) * 100;
+        F_shift_p = corr{i}{j}{1}(2:end-1) ./ (F{i}{j}(2:end-1)-F{i}{j}(1)) * 100;
         
         if j==2
-            h(i) = plot(Re0{i}{j}(2:end), dF_shift_p, lines{i}, 'Color', c(i), ...
+            h(i) = plot(Re0{i}{j}(2:end), F_shift_p, lines{i}, 'Color', c(i), ...
                 'Marker', m(i), 'MarkerFaceColor', c(i));
         elseif j/2 ~= floor(j/2)
-            plot(Re0{i}{j}(2:end), dF_shift_p, lines{i}, 'Color', c(i), ...
+            plot(Re0{i}{j}(2:end), F_shift_p, lines{i}, 'Color', c(i), ...
                 'Marker', m(i));
         else
-            plot(Re0{i}{j}(2:end), dF_shift_p, lines{i}, 'Color', c(i), ...
+            plot(Re0{i}{j}(2:end), F_shift_p, lines{i}, 'Color', c(i), ...
                 'Marker', m(i), 'MarkerFaceColor', c(i));
         end
         
@@ -456,7 +456,6 @@ end
 legend(h,name(idx),'Location','EastOutside');
 plot([-0.1*xMax 1.1*xMax],[0 0],'k-','LineWidth',3);
 xlim([-0.1*xMax 1.1*xMax]);
-ylim([ -10 10]);
 
 %% Null force shift correction (delta)
 

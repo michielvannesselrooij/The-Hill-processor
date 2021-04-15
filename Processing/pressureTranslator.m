@@ -49,9 +49,10 @@ end
 p = p-p(1,:);
 
 % Correct for residual pressures at end of measurement
-p_shift  = p(end,:);
-p(end,:) = zeros(size(p(end,:)));
-p        = p - repmat(p_shift, size(p,1), 1) .* abs(p)./max(abs(p));
+p_shift                 = p(end,:);
+p_shift(isnan(p_shift)) = 0;
+p(end,:)                = zeros(size(p(end,:)));
+% p                       = p - repmat(p_shift, size(p,1), 1) .* abs(p)./max(abs(p));
 
 % Extract pitot pressure
 if isnan(config(1))
@@ -110,8 +111,12 @@ else
 
         % Calculate vertical pressure distribution for each velocity
         for i = 1:size(p,1) 
-            p_vert{i} = interp1([-7.5, -2.5]/1000,...
-                [p1(i)./pmean(i), p2(i)./pmean(i)], yq, 'linear', 'extrap');
+            if pmean(i) == 0
+                p_vert{i} = ones(1,n1);
+            else
+                p_vert{i} = interp1([-7.5, -2.5]/1000,...
+                    [p1(i)./pmean(i), p2(i)./pmean(i)], yq, 'linear', 'extrap');
+            end
         end
 
         % Replace center measurements with their average
@@ -185,15 +190,9 @@ else
     p_LE = P(:,LE(idx_temp));
 
     for i=1:size(p_LE,1)
-
         p_int_LE{i} = interp1(z_LE/1000, p_LE(i,:), zq, 'spline', 'extrap');
-
         p_int_LE{i} = repmat(p_int_LE{i}, length(yq), 1)...
                         .* repmat(p_vert{i}', 1, length(zq));
-
-        % Don't use vertical gradient for LE
-%         p_int_LE{i} = repmat(p_int_LE{i}, length(yq), 1); 
-
     end
 
     % Trailing edge
@@ -201,11 +200,9 @@ else
     p_TE = P(:,TE(idx_temp));
 
     for i=1:size(p_TE,1)
-
         p_int_TE{i} = interp1(z_TE/1000, p_TE(i,:), zq, 'spline', 'extrap');
         p_int_TE{i} = repmat(p_int_TE{i}, length(yq), 1)...
                         .* repmat(p_vert{i}', 1, length(zq));
-
     end
 
     % Pressure delta & drag correction
@@ -367,20 +364,22 @@ else
         subplot(3,1,1); box on; ylabel('y [m]'); hold on;
         [C1, h1] = contourf(zq, yq', p_int_LE{end-1}, levels);
         scatter(zLE_plot, yLE_plot, 10, 'w');
-        title('LE gap p [Pa]'); 
+        title('x = 0 mm'); 
         caxis([levels(1) levels(end)]);
         colormap(cmap);
+        set(gca,'xtick',[])
 
         subplot(3,1,2); box on; ylabel('y [m]'); hold on;
         [C2, h2] = contourf(zq, yq, p_int_TE{end-1}, levels);
         scatter(zTE_plot, yTE_plot, 10, 'w');
-        title('TE gap p [Pa]'); 
+        title('x = 890 mm'); 
         caxis([levels(1) levels(end)]);
         colormap(cmap);
+        set(gca,'xtick',[])
 
         subplot(3,1,3); box on; ylabel('y [m]'); xlabel('z [m]'); hold on;
         [C3, h3] = contourf(zq, yq, dp{end-1}, levels);
-        title('\Delta p [Pa]'); 
+        title('\Delta p'); 
         caxis([levels(1) levels(end)]);
         colormap(cmap);
 

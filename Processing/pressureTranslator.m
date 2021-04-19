@@ -52,7 +52,8 @@ p = p-p(1,:);
 p_shift                 = p(end,:);
 p_shift(isnan(p_shift)) = 0;
 p(end,:)                = zeros(size(p(end,:)));
-% p                       = p - repmat(p_shift, size(p,1), 1) .* abs(p)./max(abs(p));
+% p                       = p - repmat(p_shift, size(p,1), 1) .* abs(p)./max(abs(p)); % assume buildup over pressure signal
+p                       = p - repmat(p_shift, size(p,1), 1) .* repmat([0, 1:1:size(p,1)-2, 0]'/(size(p,1)-2), 1, size(p,2)); % assume buildup over time
 
 % Extract pitot pressure
 if isnan(config(1))

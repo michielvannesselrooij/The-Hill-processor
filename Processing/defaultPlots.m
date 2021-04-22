@@ -102,8 +102,9 @@ end
 % Create table
 varNames = {'D_raw_ref', 'D_raw', 'D_p_ref', 'D_p',...
     'D_corr_ref', 'D_corr'};
+name_unique = matlab.lang.makeUniqueStrings(name);
 T = table(summary_F0, summary_F1, summary_Fp0, summary_Fp1, summary_Fc0,...
-    summary_Fc1,'VariableNames',varNames,'RowNames',name(idx));
+    summary_Fc1,'VariableNames',varNames,'RowNames',name_unique(idx));
 disp(T);
 writetable(T,['results' filesep 'summary.xls'],'WriteRowNames',true);
 
@@ -862,7 +863,7 @@ xlim([-0.1*xMax 1.1*xMax]);
 ylim([-10 10]);
 
 %% Delta bar chart
-dF_atMax = deltaBarChart(Re_target(idx), dCdp(idx), name(idx));
+dF_atMax = deltaBarChart(Re_target(idx), dCdp(idx), name_unique(idx));
 
 %% RMSE (%)
 

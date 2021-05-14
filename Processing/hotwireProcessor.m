@@ -9,7 +9,6 @@ function [y, u, u_rms, u_power, ut, y0, k, B, PI, d, d_star, theta, H,...
 % Probe temperature
 Tw    = 225;        
 
-
 % -------------------------------------------------------------------------
 % Import calibration file
 % -------------------------------------------------------------------------
@@ -17,30 +16,42 @@ Tw    = 225;
 % Import
 delimiter = '\t';
 startRow = 1;
-formatSpec = '%s%f%[^\n\r]';
+formatSpec = '%f%f%f%f%s%f%[^\n\r]';
 fileID = fopen(calFile,'r');
-textscan(fileID, '%[^\n\r]', startRow-1, 'WhiteSpace', '',...
-    'ReturnOnError', false, 'EndOfLine', '\r\n');
 dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter,...
     'TextType', 'string', 'ReturnOnError', false);
 fclose(fileID);
-data = dataArray{2};
+data = dataArray{6};
 
-% Extract
-filter0 = find(isnan(data));
-filter1 = filter0(1:2:end-1);
-filter2 = filter0(2:2:end);
-u_cal   = str2double(dataArray{1}(filter1)); % Pitot velocities
-T_cal   = str2double(dataArray{1}(filter2)); % Temperatures
+% Extract environmental data
+filter  = find(isnan(data));
+T_cal   = dataArray{1}(filter);
+hum_cal = dataArray{2}(filter);
+pa_cal  = dataArray{3}(filter);
+q_cal   = dataArray{4}(filter);
 
-volt_cal = zeros(length(filter1),1); 
-filter1  = [filter1; length(data)+1];
-for i = 1:length(filter1)-1
-    raw         = data(filter1(i)+3 : filter1(i+1)-1);
+q0 = q_cal(end); % Store post-calibration pressure as null
+
+% Calculate velocities
+[~, u_cal, ~, ~] = velocityCalculator(q_cal, pa_cal, T_cal, hum_cal);
+
+% Extract hotwire data
+volt_cal = zeros(length(filter),1); 
+filter  = [filter; length(data)+1];
+for i = 1:length(filter)-1
+    raw         = data(filter(i)+1 : filter(i+1)-1);
     filtered    = raw( raw > mean(raw)-3*std(raw) & ...
                        raw < mean(raw)+3*std(raw));
     volt_cal(i) = mean(filtered);
 end
+
+% Ignore post-calibration null measurement
+volt_cal(end) = [];
+u_cal(end)    = [];
+T_cal(end)    = [];
+hum_cal(end)  = [];
+pa_cal(end)   = [];
+q_cal(end)    = [];
 
 % Calibration function (based on Hultmark and Smits, 2010)
 % u_cal(isnan(u_cal))  = 0;
@@ -56,8 +67,16 @@ end
 % 
 % [p, ~, mu] = polyfit(y_cal, u_cal./nu_cal, 4);
 
+% Check for errors
+err = find(isnan(u_cal));
+if ~isempty(err)
+    warning([num2str(length(err)) ' hotwire calibration velocities were ignored']);
+    volt_cal(err) = [];
+    u_cal(err)    = [];
+    T_cal(err)    = [];
+end
+
 % Create calibration 4-th order polynomial (based on convection theory)
-u_cal(isnan(u_cal))  = 0;
 [volt_cal, idx]      = sort(volt_cal);
 u_cal                = u_cal(idx);
 volt_cal(u_cal==Inf) = [];              % Catch potential corrupt data
@@ -84,32 +103,26 @@ if ~isempty(wallFile)
     
     % Import
     fileID = fopen(wallFile,'r');
-    textscan(fileID, '%[^\n\r]', startRow-1, 'WhiteSpace', '',...
-        'ReturnOnError', false, 'EndOfLine', '\r\n');
     dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter,...
         'TextType', 'string', 'ReturnOnError', false);
     fclose(fileID);
-    data = dataArray{2};
+    data = dataArray{6};
     
-    % Filter
     filter0 = find(isnan(data));
-    filter1 = filter0(1:3:end-2);
-    filter3 = filter0(3:3:end);
-    
-    % Extract
-    T_wall  = str2double(dataArray{1}(filter3));        % Temperatures
-    y_wall  = str2double(dataArray{1}(filter1))/1000;   % y values
+    filter1 = filter0(1:2:end-1);
+    filter2 = filter0(2:2:end);
+    y_wall       = dataArray{1}(filter1)/1000; % y values
+    T_wall       = dataArray{1}(filter2);
     
     volt_wall = zeros(length(filter1),1); 
     filter1   = [filter1; length(data)+1];
     
     for i = 1:length(filter1)-1
-        raw          = data(filter1(i)+3 : filter1(i+1)-1);
+        raw          = data(filter1(i)+2 : filter1(i+1)-1);
         filtered     = raw( raw > mean(raw)-3*std(raw) & ...
                             raw < mean(raw)+3*std(raw));
         volt_wall(i) = mean(filtered);
     end
-%     volt_wall = volt_wall - mean(volt_wall(1:5));
     volt_wall = volt_wall - volt_wall(1);
     
     % Correct for temperature (Bruun, 1995)
@@ -119,8 +132,6 @@ if ~isempty(wallFile)
     % Curve-fit the wall correction 
     wallCorr = hotwireWallCalibration(volt_wall, y_wall);
     
-    % [p_wall, ~, mu_wall] = polyfit(y_wall, volt_wall, n);
-    
 end
 
 
@@ -129,21 +140,24 @@ end
 % -------------------------------------------------------------------------
 
 fileID = fopen(dataFile,'r');
-textscan(fileID, '%[^\n\r]', startRow-1, 'WhiteSpace', '',...
-    'ReturnOnError', false, 'EndOfLine', '\r\n');
 dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter,...
     'TextType', 'string', 'ReturnOnError', false);
 fclose(fileID);
-data = dataArray{2};
+data = dataArray{6};
 
 % Extract
 filter0 = find(isnan(data));
-filter1 = filter0(1:3:end-2);
-filter2 = filter0(2:3:end-1);
-filter3 = filter0(3:3:end);
-y       = str2double(dataArray{1}(filter1))/1000; % y values
-u_inf   = str2double(dataArray{1}(filter2));      % Pitot velocities
-T       = str2double(dataArray{1}(filter3));      % Temperatures
+filter1 = filter0(1:2:end-1);
+filter2 = filter0(2:2:end);
+y       = dataArray{1}(filter1)/1000; % y values
+T       = dataArray{1}(filter2);
+hum     = dataArray{2}(filter2);
+pa      = dataArray{3}(filter2);
+q       = dataArray{4}(filter2);
+
+[~, u_inf, ~, nu] = calcV(q-q0, pa, T, hum);
+nu      = mean(nu);
+
 volt    = cell(length(filter1),1);                       
 u_raw   = cell(length(filter1),1);  
 u_power = cell(length(filter1),1);  
@@ -154,7 +168,6 @@ u_rms   = zeros(length(filter1),1);
 if exist('volt_wall','var')
     for i=1:length(y)
         if y(i)<= max(y_wall)
-            %wallCorr(i) = polyval(p_wall, y(i), [], mu_wall);
             wallCorr(i) = interp1(y_wall, volt_wall, y(i),...
                 'linear', 'extrap');
         else
@@ -179,7 +192,7 @@ filter1  = [filter1; length(data)+1];
 for i = 1:length(filter1)-1
     
     % Raw voltage
-    raw        = data(filter1(i)+3 : filter1(i+1)-1);
+    raw        = data(filter1(i)+2 : filter1(i+1)-1);
     volt{i}    = raw( raw > mean(raw)-3*std(raw) & ...
                       raw < mean(raw)+3*std(raw));
     

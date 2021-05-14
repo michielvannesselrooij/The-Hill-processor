@@ -265,11 +265,11 @@ for i=idx
     maxX = 0; maxY = 0;
     for j=1:length(y{i})
         if isempty(find(idx_double==i))
-            h = plot(u{i}{j}/u{i}{j}(end), y{i}{j}*1e3, 's-','Color',c(j+1));
+            h = plot(u{i}{j}, y{i}{j}*1e3, 's-','Color',c(j+1));
         else
-            h(j) = plot(u{i}{j}/u{i}{j}(end), y{i}{j}*1e3, 's-','Color',c(j));
+            h(j) = plot(u{i}{j}, y{i}{j}*1e3, 's-','Color',c(j));
         end
-        maxX = max([maxX, max(u{i}{j}/max(u{i}{j}))]);
+        maxX = max([maxX, max(u{i}{j})]);
         maxY = max([maxY, max(y{i}{j})]);
     end
     
@@ -278,10 +278,10 @@ for i=idx
     end
     
     if ~isempty(find(idx_double==i))
-        legend(h, 'Ref.','Target');
+        legend(h, 'Ref.','Target','Location','NorthWest');
     end
     
-    xlabel('u/U [-]');
+    xlabel('u [m/s]');
     title(name{i});
     xlim([0 maxX*1.1]);
     ylim([0 maxY*1.1*1e3]);
@@ -469,11 +469,15 @@ for i=idx
         if isempty(find(idx_double==i))
             yp{i}{j} = y{i}{j}*ut{i}(j)/nu{i};
             up{i}{j} = u{i}{j}/ut{i}(j);
+%             yp{i}{j} = (y{i}{j}-y0{i}(j))*ut{i}(1)/nu{i};
+%             up{i}{j} = u{i}{j}/ut{i}(1);
             plot(yp_model{i}{j}, up_model{i}{j}, 'k-');
             h = plot(yp{i}{j}, up{i}{j}, 's', 'Color', c(j+1));
         else
             yp{i}{j} = y{i}{j}*ut{i}(j)/nu{i};
             up{i}{j} = u{i}{j}/ut{i}(j);
+%             yp{i}{j} = (y{i}{j}-y0{i}(j))*ut{i}(1)/nu{i};
+%             up{i}{j} = u{i}{j}/ut{i}(1);
             plot(yp_model{i}{j}, up_model{i}{j}, 'k-');
             h(j) = plot(yp{i}{j}, up{i}{j}, 's', 'Color', c(j));
         end

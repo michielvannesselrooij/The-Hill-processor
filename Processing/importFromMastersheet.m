@@ -48,7 +48,7 @@ end
 
 % Use custom name if given
 if exist('custom_name','var')
-    if ~isempty(custom_name) && ~isnan(custom_name)
+    if ~isempty(custom_name) & ~isnan(custom_name)
         name = custom_name;
     end
 end

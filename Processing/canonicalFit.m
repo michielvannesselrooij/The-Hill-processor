@@ -55,8 +55,8 @@ load('BL_temp.mat', 'y', 'u', 'nu', 'muskerOpt');
 % ---------------------
 % Determine error
 % ---------------------
-up = u/ut;
-yp = (y+dy)*ut/nu;
+up           = u/ut;
+yp           = (y+dy)*ut/nu;
 up_model_int = interp1(yp_model, up_model, yp, 'linear', 'extrap');
 
 % Check and penalize potential negative values

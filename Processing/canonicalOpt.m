@@ -16,7 +16,7 @@ res        = @(Cf) mean(abs( ( (1/k*sqrt(Cf/2))*log(y*U/nu) + ...
                                (1/k*sqrt(Cf/2))*log(sqrt(Cf/2)) + B*sqrt(Cf/2) ) - u/U ));
 
 options    = optimoptions(@fmincon, 'Display', 'none', 'Algorithm', 'sqp');
-Cf         = fmincon(res, 1, [], [], [], [], 1e-9, 10, [], options);
+Cf         = fmincon(res, 1, [], [], [], [], 1e-8, 10, [], options);
 ut_clauser = sqrt(Cf/2)*U;
 
 ut_min     = 0.01;
@@ -26,7 +26,7 @@ ut_0       = ut_clauser;
 % dy
 dy_min     = -min(y) + 1e-9;
 dy_max     = 5e-3;
-dy_0       = 1e-9;
+dy_0       = 1e-9; % prevent division by zero
 
 %k
 k_min      = 0.1;
@@ -88,7 +88,6 @@ save('BL_temp.mat', 'y', 'u', 'nu', 'muskerOpt');
 % PI = x(4);
 % d  = x(5);
 
-% (SQP optimization)
 x0 = [ut_0,   dy_0,   k_0,   PI_0,   d_0];
 lb = [ut_min, dy_min, k_min, PI_min, d_min];
 ub = [ut_max, dy_max, k_max, PI_max, d_max];
@@ -106,7 +105,7 @@ save('norm.mat', 'x0', 'E0');
 
 % Run optimizer
 options = optimoptions(@fmincon, 'Display', 'iter', 'Algorithm', 'sqp',...
-            'MaxFunctionEvaluations',1000, 'FunctionTolerance', 1e-10, ...
+            'MaxFunctionEvaluations', 1000, 'FunctionTolerance', 1e-9, ...
             'StepTolerance', 1e-9);
 xn = fmincon(@canonicalFit, x0n, [], [], [], [], lbn, ubn, [], options);
 
@@ -124,7 +123,7 @@ delete('norm.mat');
 
 % Resample model BL at reasonable size
 [yp_model, up_model, B] = canonicalBL(ut, k, PI, d, nu);
-yp_model_q = logspace(0,4,500);
+yp_model_q = logspace(0, 4, 500);
 up_model_q = interp1(yp_model, up_model, yp_model_q, 'linear', 'extrap');
 
 % -------------------

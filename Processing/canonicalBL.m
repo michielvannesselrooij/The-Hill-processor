@@ -5,11 +5,11 @@ if ~exist('muskerOpt','var')
     muskerOpt = false;
 end
 
-% Calculate integration constant s
+% Calculate integration constant B (depending only on k (Nagib 2008))
 B  = 5.0;
 lb = -10;
 ub = 10;
-r  = @(B) 1.6*(exp(0.1663*B)-1) - k*B;
+r  = @(B) abs(1.58086*(exp(0.1663*B)-1) - k*B); % 1.58086 adapted to fit k=0.41/B=5.0
 options = optimoptions(@fmincon, 'Display', 'none', 'Algorithm', 'sqp');        
 B = fmincon(r, B, [], [], [], [], lb, ub, [], options);
 

@@ -1,5 +1,5 @@
 function BLplots(name, y, u, u_rms, u_power, nu, ut, y0, k, B, PI, d, d_star,...
-            theta, H, up_model, yp_model, V, dCdp)
+            theta, H, up_model, yp_model, V, dCdp, colors, lines, markers)
 
 % DEFAULT BOUNDARY LAYER PLOTS
 % ----------------------------------------------------------
@@ -8,6 +8,7 @@ function BLplots(name, y, u, u_rms, u_power, nu, ut, y0, k, B, PI, d, d_star,...
 %   1 data set:  Single line, skipped in delta plots
 %   2 data sets: 1st measurement is reference, 2nd is target
 % ----------------------------------------------------------
+
 
 %% Analyze number of measurements
 N = length(name);
@@ -32,7 +33,41 @@ end
 
 %% Preparations
 
-c = 'krbm';                        % Colors  (standard)
+
+%% Styling settings
+
+% Determine colors
+c = '';
+for i=1:N
+    if isnan(colors{i})
+        c   = 'krbmgckrbmgc'; % Default
+        break;
+    else
+        c = [c, colors{i}];
+    end
+end
+
+% Determine markers
+m = '';
+for i=1:N
+    if isnan(markers{i})
+        m   = 's<d>os<d>os<'; % Default
+        break;
+    else
+        m = [m, markers{i}];
+    end
+end
+
+% Determine line styling
+for i=1:N
+    if isnan(lines{i})
+        for j=1:N
+            lines{j} = '-'; % Default
+        end
+        break;
+    end
+end
+
 c2 = distinguishable_colors(N);    % Colors  (consolidations)
 
 idx          = 1:N;
@@ -457,44 +492,75 @@ end
 
 %% Non-dimensional profile
 
-figure;
-for i=idx
-    
-    subplot(N,1,find(idx==i));
-    hold on; grid on; box on;
-    
+if isempty(idx_double)
+    consolidate = true;
+else
+    consolidate = false;
+end
+
+if consolidate
+    figure; hold on; grid on; box on;
+    h=[];
+
     maxX = 0; maxY = 0;
-    for j=1:length(y{i})
-        
-        if isempty(find(idx_double==i))
-            yp{i}{j} = y{i}{j}*ut{i}(j)/nu{i};
+    for i=1:length(y)
+        for j=1
+            yp{i}{j} = y{i}{j}*ut{i}(j)/nu{i}(j);
             up{i}{j} = u{i}{j}/ut{i}(j);
-%             yp{i}{j} = (y{i}{j}-y0{i}(j))*ut{i}(1)/nu{i};
-%             up{i}{j} = u{i}{j}/ut{i}(1);
-            plot(yp_model{i}{j}, up_model{i}{j}, 'k-');
-            h = plot(yp{i}{j}, up{i}{j}, 's', 'Color', c(j+1));
-        else
-            yp{i}{j} = y{i}{j}*ut{i}(j)/nu{i};
-            up{i}{j} = u{i}{j}/ut{i}(j);
-%             yp{i}{j} = (y{i}{j}-y0{i}(j))*ut{i}(1)/nu{i};
-%             up{i}{j} = u{i}{j}/ut{i}(1);
-            plot(yp_model{i}{j}, up_model{i}{j}, 'k-');
-            h(j) = plot(yp{i}{j}, up{i}{j}, 's', 'Color', c(j));
+            h(i) = plot(yp{i}{j}, up{i}{j}, 'Color', c(i), 'Marker', '.',...
+                'LineStyle', 'none');
+            
+            h2 = plot(yp_model{i}{j}, up_model{i}{j}, 'k-');
+
+            maxX = max([maxX, max(yp{i}{j})]);
+            maxY = max([maxY, max(up{i}{j})]);
         end
-        
-        maxX = max([maxX, max(yp{i}{j})]);
-        maxY = max([maxY, max(up{i}{j})]);
     end
-    
-    if ~isempty(find(idx_double==i))
-        legend(h, 'Ref.','Target', 'Location', 'NorthWest');
-    end
-   
+
+    legend([h, h2], [name, 'model'], 'Location', 'NorthWest');
+
     set(gca,'xscale','log');
     xlim([1 maxX*3]);
     ylim([0 maxY*1.25]);
     xlabel('y^+');
     ylabel('u^+');
-    title(name{i});
-   
+        
+else
+
+    figure;
+    for i=idx
+
+        subplot(N,1,find(idx==i));
+        hold on; grid on; box on;
+
+        maxX = 0; maxY = 0;
+        for j=1:length(y{i})
+
+            if isempty(find(idx_double==i))
+                yp{i}{j} = y{i}{j}*ut{i}(j)/nu{i}(j);
+                up{i}{j} = u{i}{j}/ut{i}(j);
+                plot(yp_model{i}{j}, up_model{i}{j}, 'k-');
+                h = plot(yp{i}{j}, up{i}{j}, 's', 'Color', c(j+1));
+            else
+                yp{i}{j} = y{i}{j}*ut{i}(j)/nu{i}(j);
+                up{i}{j} = u{i}{j}/ut{i}(j);
+                plot(yp_model{i}{j}, up_model{i}{j}, 'k-');
+                h(j) = plot(yp{i}{j}, up{i}{j}, 's', 'Color', c(j));
+            end
+
+            maxX = max([maxX, max(yp{i}{j})]);
+            maxY = max([maxY, max(up{i}{j})]);
+        end
+
+        if ~isempty(find(idx_double==i))
+            legend(h, 'Ref.','Target', 'Location', 'NorthWest');
+        end
+
+        set(gca,'xscale','log');
+        xlim([1 maxX*3]);
+        ylim([0 maxY*1.25]);
+        xlabel('y^+');
+        ylabel('u^+');
+        title(name{i});
+    end
 end

@@ -62,8 +62,8 @@ up_model_int = interp1(yp_model, up_model, yp, 'linear', 'extrap');
 % Check and penalize potential negative values
 up_model_int(up_model_int <= 0) = 1e-3;
 
-% E = mean(abs(up_model_int - up)./up_model_int);
-E = mean(sqrt((up_model_int - up).^2));
+E = mean(abs(up_model_int - up)./up_model_int);
+% E = mean(sqrt((up_model_int - up).^2));
 
 % Normalize error
 E = E/E0;

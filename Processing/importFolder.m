@@ -91,23 +91,6 @@ HW_mat_files = dir([hotwireFolder filesep '*.mat']);
 HW_csv_files = dir([hotwireFolder filesep '*HW.csv']);
 
 if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files))
-
-    % Determine average viscosity
-    if isempty(nu)
-        
-        nu_avg = 1.51e-5;
-        warning('Using default value for nu');
-        
-    else
-        
-        nu_avg = 0;
-        for i=1:length(nu)
-            nu_avg = nu_avg+mean(nu{i});
-        end
-        nu_avg = nu_avg/length(nu);
-        
-    end
-    
     
     if forceFileRead==0 && ~isempty(HW_mat_files)
         
@@ -115,14 +98,16 @@ if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files
         for i=1:length(HW_mat_files)
             
             load([HW_mat_files(i).folder filesep HW_mat_files(i).name],...
-                'y', 'u', 'u_rms', 'u_power', 'ut', 'y0', 'k', 'B', 'PI',...
-                'd', 'd_star', 'theta', 'H', 'up_model', 'yp_model');
+                'y', 'u', 'u_rms', 'u_power', 'ut', 'nu', 'y0', 'k',...
+                'B', 'PI', 'd', 'd_star', 'theta', 'H', 'up_model',...
+                'yp_model');
             
             y2{i}        = y;
             u2{i}        = u;
             u_rms2{i}    = u_rms;
             u_power2{i}  = u_power;
             ut2(i)       = ut;
+            nu2(i)       = nu;
             y02(i)       = y0;
             k2(i)        = k;
             B2(i)        = B;
@@ -141,6 +126,7 @@ if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files
         u_rms    = u_rms2;
         u_power  = u_power2;
         ut       = ut2;
+        nu_avg   = nu2;
         y0       = y02;
         k        = k2;
         B        = B2;
@@ -211,10 +197,10 @@ if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files
             end
             
             % Process data
-            [y{i}, u{i}, u_rms{i}, u_power{i}, ut(i), y0(i), k(i), B(i),...
-                PI(i), d(i), d_star(i), theta(i), H(i), up_model{i}, ...
-                yp_model{i}] = hotwireProcessor(dataFile, ...
-                calFile, wallFile, ignore, nu_avg);
+            [y{i}, u{i}, u_rms{i}, u_power{i}, ut(i), nu_avg(i), y0(i),...
+                k(i), B(i), PI(i), d(i), d_star(i), theta(i), H(i),...
+                up_model{i}, yp_model{i}] = hotwireProcessor(dataFile, ...
+                calFile, wallFile, ignore);
             
         end
     end

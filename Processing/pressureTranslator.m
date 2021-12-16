@@ -52,6 +52,7 @@ p = p-p(1,:);
 p_shift                 = p(end,:);
 p_shift(isnan(p_shift)) = 0;
 p(end,:)                = zeros(size(p(end,:)));
+% p                       = p - repmat(p_shift, size(p,1), 1) .* p./(p(end-1,:)); % assume buildup over pressure signal
 % p                       = p - repmat(p_shift, size(p,1), 1) .* abs(p)./max(abs(p)); % assume buildup over pressure signal
 p                       = p - repmat(p_shift, size(p,1), 1) .* repmat([0, 1:1:size(p,1)-2, 0]'/(size(p,1)-2), 1, size(p,2)); % assume buildup over time
 
@@ -191,7 +192,7 @@ else
     p_LE = P(:,LE(idx_temp));
 
     for i=1:size(p_LE,1)
-        p_int_LE{i} = interp1(z_LE/1000, p_LE(i,:), zq, 'spline', 'extrap');
+        p_int_LE{i} = interp1(z_LE/1000, p_LE(i,:), zq, 'linear', 'extrap');
         p_int_LE{i} = repmat(p_int_LE{i}, length(yq), 1)...
                         .* repmat(p_vert{i}', 1, length(zq));
     end
@@ -201,7 +202,7 @@ else
     p_TE = P(:,TE(idx_temp));
 
     for i=1:size(p_TE,1)
-        p_int_TE{i} = interp1(z_TE/1000, p_TE(i,:), zq, 'spline', 'extrap');
+        p_int_TE{i} = interp1(z_TE/1000, p_TE(i,:), zq, 'linear', 'extrap');
         p_int_TE{i} = repmat(p_int_TE{i}, length(yq), 1)...
                         .* repmat(p_vert{i}', 1, length(zq));
     end

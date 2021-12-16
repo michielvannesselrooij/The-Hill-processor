@@ -81,11 +81,11 @@ summary_Fc1 = summary_F0;   % Corrected absolute force (target)
 i=1;
 for k = idx
     for j=1:length(Re0{i})
-        temp_Fc(j) = interp1(Re0{i}{j}, F{i}{j}(1:end-1)-F{i}{j}(1), Remax);
-        if corr{i}{j}{2} == 0
+        temp_Fc(j) = interp1(Re0{k}{j}, F{k}{j}(1:end-1)-F{k}{j}(1), Remax);
+        if corr{k}{j}{2} == 0
             temp_Fp(j) = 0;
         else
-            temp_Fp(j) = interp1(Re0{i}{j}, corr{i}{j}{2}(1:end-1), Remax);
+            temp_Fp(j) = interp1(Re0{k}{j}, corr{k}{j}{2}(1:end-1), Remax);
         end
         temp_F(j)  = temp_Fc(j) + temp_Fp(j);
     end
@@ -127,13 +127,13 @@ for k=idx
     ylim([0 Dmax*1.25]);
     ylabel('F [N]');
     grid minor;
-    set(gca, 'XTickLabel', {'Ref', name{i}})
+    set(gca, 'XTickLabel', {'Ref', name{k}})
     legend('Corrected drag', 'Pressure correction (+)', 'Pressure correction (-)')
     
     % Save
     set(gcf,'WindowStyle','normal');
     set(gcf, 'Units', 'pixels', 'Position', [10 10 800 600]);
-    saveas(gcf, ['results' filesep num2str(i) '_' name{i} '.png']);
+    saveas(gcf, ['results' filesep num2str(i) '_' name{k} '.png']);
     set(gcf,'WindowStyle','docked');
     close;
     
@@ -151,37 +151,37 @@ ylabel('p [Pa]');
 
 i=1;
 for k=idx
-    for j=1:length(X{i})
+    for j=1:length(X{k})
         
         % Find pressure gradient data
-        idx_grad = find(abs(X{i}{j}(:,1)) ~= 445 & X{i}{j}(:,2) == 0);
-        [~, sortGrad] = sort(X{i}{j}(idx_grad,1));
+        idx_grad = find(abs(X{k}{j}(:,1)) ~= 445 & X{k}{j}(:,2) == 0);
+        [~, sortGrad] = sort(X{k}{j}(idx_grad,1));
         idx_grad = idx_grad(sortGrad);
          
         if length(idx_grad) >= 2
-%             yPlot = P{i}{j}(:,idx_grad) ./ repmat(0.5.*rho{i}{j}.*V{i}{j}.^2, 1, length(idx_grad));
-            yPlot = P{i}{j}(:,idx_grad);
-            xPlot = X{i}{j}(idx_grad,1)/1000;
+%             yPlot = P{k}{j}(:,idx_grad) ./ repmat(0.5.*rho{k}{j}.*V{k}{j}.^2, 1, length(idx_grad));
+            yPlot = P{k}{j}(:,idx_grad);
+            xPlot = X{k}{j}(idx_grad,1)/1000;
 
             for l=1:size(yPlot,1)
                 
                 % Plot pressure gradient data points
                 if j==1 && l==2
-                    h(i) = plot(xPlot, yPlot(l,:)', 'Color', c(i),...
-                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineStyle', 'none');
+                    h(i) = plot(xPlot, yPlot(l,:)', 'Color', c(k),...
+                    'Marker', m(k), 'MarkerFaceColor', c(k), 'LineStyle', 'none');
                 else
-                    plot(xPlot, yPlot(l,:)', 'Color', c(i),...
-                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineStyle', 'none');
+                    plot(xPlot, yPlot(l,:)', 'Color', c(k),...
+                    'Marker', m(k), 'MarkerFaceColor', c(k), 'LineStyle', 'none');
                 end
                 
                 % Fit linear pressure gradient
-                pGradFit{i}{j}{l} = polyfit(xPlot, yPlot(l,:)', 1);
-                pGrad{i}{j}(l)    = pGradFit{i}{j}{l}(1); % For easy plotting
+                pGradFit{k}{j}{l} = polyfit(xPlot, yPlot(l,:)', 1);
+                pGrad{k}{j}(l)    = pGradFit{k}{j}{l}(1); % For easy plotting
                 fitX              = [min(xPlot) max(xPlot)];
-                fitPlot           = polyval(pGradFit{i}{j}{l}, fitX);
+                fitPlot           = polyval(pGradFit{k}{j}{l}, fitX);
                 
                 % Plot fitted pressure gradient
-                plot(fitX, fitPlot, '-', 'Color', c(i));
+                plot(fitX, fitPlot, '-', 'Color', c(k));
                 
             end
         end
@@ -199,17 +199,17 @@ ylabel('\Deltap/\Deltax [Pa/m]');
 
 i=1;
 for k=idx
-    for j=1:length(pGrad{i})
+    for j=1:length(pGrad{k})
 
         if j==2
-           h(i) = plot(Re0{i}{j}, pGrad{i}{j}(1:end-1),'Color', c(i),...
-                    'Marker', m(i), 'MarkerFaceColor', c(i),'LineWidth',1.5); 
+           h(i) = plot(Re0{k}{j}, pGrad{k}{j}(1:end-1),'Color', c(k),...
+                    'Marker', m(k), 'MarkerFaceColor', c(k),'LineWidth',1.5); 
         elseif j/2 == floor(j/2) % Ref plates
-            plot(Re0{i}{j}, pGrad{i}{j}(1:end-1), ':','Color', c(i),...
-                    'Marker', m(i)); 
+            plot(Re0{k}{j}, pGrad{k}{j}(1:end-1), ':','Color', c(k),...
+                    'Marker', m(k)); 
         else
-            plot(Re0{i}{j}, pGrad{i}{j}(1:end-1),'Color', c(i),...
-                    'Marker', m(i), 'MarkerFaceColor', c(i),'LineWidth',1.5); 
+            plot(Re0{k}{j}, pGrad{k}{j}(1:end-1),'Color', c(k),...
+                    'Marker', m(k), 'MarkerFaceColor', c(k),'LineWidth',1.5); 
         end
         
     end
@@ -258,22 +258,22 @@ i=1;
 for k=idx    
     figure;
     
-    for j=1:length(X{i})
+    for j=1:length(X{k})
         
-        for l=size(P{i}{j},1)-1
+        for l=size(P{k}{j},1)-1
         
-            subplot(length(X{i}),1,j);
+            subplot(length(X{k}),1,j);
             hold on; box on;
             
             if j==1
-                title(['Pressure map @ V_{max} (' name(i) ')']);
+                title(['Pressure map @ V_{max} (' name(k) ')']);
             end
 
             % Find streamwise gap pressures
-            idx_str  = find(abs(X{i}{j}(:,1)) ~= 445 & X{i}{j}(:,2) == -5);
+            idx_str  = find(abs(X{k}{j}(:,1)) ~= 445 & X{k}{j}(:,2) == -5);
 
             % Find interior pressure data
-            idx_int = find(X{i}{j}(:,2) < -10);
+            idx_int = find(X{k}{j}(:,2) < -10);
 
             % Plot pressure contour
             levels = -100:1:100;
@@ -288,10 +288,10 @@ for k=idx
             if length(idx_int) >= 3 % need at least 3 points for 2D map
                 xq  = [-.445,  .445];
                 zq  = [-.1875, .1875];
-                xp  = X{i}{j}(idx_int,1);
-                zp  = X{i}{j}(idx_int,3);
+                xp  = X{k}{j}(idx_int,1);
+                zp  = X{k}{j}(idx_int,3);
                 [xq, zq] = meshgrid(xq, zq);
-                vq       = griddata(xp, zp, P{i}{j}(l,idx_int), xq, zq, 'natural');
+                vq       = griddata(xp, zp, P{k}{j}(l,idx_int), xq, zq, 'natural');
                 [C, h]   = contourf(xq, zq, vq, levels);
                 caxis([levels(1) levels(end)]);
                 colormap(cmap);
@@ -322,9 +322,9 @@ for k=idx
     
     figure; 
     
-    for k=1:length(F_power{i})
+    for l=1:length(F_power{k})
         
-        subplot(length(F_power{i}),1,k)
+        subplot(length(F_power{k}),1,l)
         hold on;
         box on;
         grid minor;
@@ -332,17 +332,17 @@ for k=idx
         xlim([0 50]);
         ylim([0 2000]);
         
-        if k==length(F_power{i})
+        if l==length(F_power{k})
             xlabel('f [Hz]');
         end
         
         if k==1
-            title(['Force power spectrum (' name{i} ')']);
+            title(['Force power spectrum (' name{k} ')']);
         end
 
-        for j=1:length(F_power{i}{k})
-                plot(F_power{i}{k}{j}{1}(:,1), F_power{i}{k}{j}{1}(:,2));
-                plot(F_power{i}{k}{j}{2}(:,1), F_power{i}{k}{j}{2}(:,2),...
+        for j=1:length(F_power{i}{l})
+                plot(F_power{i}{l}{j}{1}(:,1), F_power{i}{l}{j}{1}(:,2));
+                plot(F_power{i}{l}{j}{2}(:,1), F_power{i}{l}{j}{2}(:,2),...
                     'k.');
         end
     end
@@ -355,13 +355,13 @@ end
 pMax = 0;
 vMax = 0;
 i=1;
-for l=idx
-    for j=1:length(F_power{i})
-        for k=1:length(F_power{i}{j})
+for k=idx
+    for l=1:length(F_power{k})
+        for j=1:length(F_power{k}{l})
             thres = 0.5; % axis cutoff below points with low prominance
-            ptemp = F_power{i}{j}{k}{2}(F_power{i}{j}{k}{2}(:,2)>thres,1);
+            ptemp = F_power{k}{l}{j}{2}( F_power{k}{l}{j}{2}(:,2)>thres, 1);
             pMax = max([pMax, max(ptemp)]);
-            vMax = max([vMax, max(V{i}{j}(k))]);
+            vMax = max([vMax, max(V{k}{l}(j))]);
         end
     end
     
@@ -373,7 +373,7 @@ i=1;
 for k=idx
     
     figure;
-    title(['Force signal power peaks: ' name{i} ' (valid for M-tunnel only!)']);
+    title(['Force signal power peaks: ' name{k} ' (valid for M-tunnel only!)']);
     hold on; box on;
 %     xlabel('V [m/s]');
     xlabel('Windtunnel fan speed [rpm]');
@@ -394,10 +394,10 @@ for k=idx
     plot(xtemp(1:end-1), 5.0*xtemp(1:end-1)/60,'k:');
     plot(xtemp(1:end-1), 7.5*xtemp(1:end-1)/60,'k:');
     
-    for j=1:length(F_power{i})
+    for j=1:length(F_power{k})
         
-        for k=1:length(F_power{i}{j})
-            power      = F_power{i}{j}{k}{2};
+        for ii=1:length(F_power{k}{j})
+            power      = F_power{k}{j}{ii}{2};
             pks        = power(:,1);
             prominance = power(:,2);
             [prominance, idx0] = sort(prominance);
@@ -435,19 +435,19 @@ ylabel('\Delta F_{null} [%]')
 
 i=1;
 for k=idx
-    for j=1:length(corr{i})
+    for j=1:length(corr{k})
         
-        F_shift_p = corr{i}{j}{1}(2:end-1) ./ (F{i}{j}(2:end-1)-F{i}{j}(1)) * 100;
+        F_shift_p = corr{k}{j}{1}(2:end-1) ./ (F{k}{j}(2:end-1)-F{k}{j}(1)) * 100;
         
         if j==2
-            h(i) = plot(Re0{i}{j}(2:end), F_shift_p, lines{i}, 'Color', c(i), ...
-                'Marker', m(i), 'MarkerFaceColor', c(i));
+            h(i) = plot(Re0{k}{j}(2:end), F_shift_p, lines{k}, 'Color', c(k), ...
+                'Marker', m(k), 'MarkerFaceColor', c(k));
         elseif j/2 ~= floor(j/2)
-            plot(Re0{i}{j}(2:end), F_shift_p, lines{i}, 'Color', c(i), ...
-                'Marker', m(i));
+            plot(Re0{k}{j}(2:end), F_shift_p, lines{k}, 'Color', c(k), ...
+                'Marker', m(k));
         else
-            plot(Re0{i}{j}(2:end), F_shift_p, lines{i}, 'Color', c(i), ...
-                'Marker', m(i), 'MarkerFaceColor', c(i));
+            plot(Re0{k}{j}(2:end), F_shift_p, lines{k}, 'Color', c(k), ...
+                'Marker', m(k), 'MarkerFaceColor', c(k));
         end
         
     end
@@ -472,26 +472,26 @@ ylabel('\Delta C_D [%]')
 % Calculate delta in null shift
 i=1;
 for k=idx
-    F_shift = cell(size(corr{i}));
-    for j=1:length(corr{i})
-        F_shift{j} = corr{i}{j}{1}(1:end-1);
+    F_shift = cell(size(corr{k}));
+    for j=1:length(corr{k})
+        F_shift{j} = corr{k}{j}{1}(1:end-1);
     end
-    [~, ~, dF_shift{i}] = dragDelta(F_shift, Re0{i}, 1:1:length(Re0{i}{1}));
+    [~, ~, dF_shift{k}] = dragDelta(F_shift, Re0{k}, 1:1:length(Re0{k}{1}));
     i=i+1;
 end
 
 i=1;
 for k=idx
-    for j=1:length(dF_shift{i})
+    for j=1:length(dF_shift{k})
         
-        dF_shift_p = dF_shift{i}{j}(2:end) ./ (F{i}{j}(2:end-1)-F{i}{j}(1)) * 100;
+        dF_shift_p = dF_shift{k}{j}(2:end) ./ (F{k}{j}(2:end-1)-F{k}{j}(1)) * 100;
         
         if j==1
-            h(i) = plot(Re0{i}{j}(2:end), dF_shift_p, lines{i}, 'Color', c(i), ...
-                'Marker', m(i), 'MarkerFaceColor', c(i));
+            h(i) = plot(Re0{k}{j}(2:end), dF_shift_p, lines{k}, 'Color', c(k), ...
+                'Marker', m(k), 'MarkerFaceColor', c(k));
         else
-            plot(Re0{i}{j}(2:end), dF_shift_p, lines{i}, 'Color', c(i), ...
-                'Marker', m(i), 'MarkerFaceColor', c(i));
+            plot(Re0{k}{j}(2:end), dF_shift_p, lines{k}, 'Color', c(k), ...
+                'Marker', m(k), 'MarkerFaceColor', c(k));
         end
         
     end
@@ -517,33 +517,33 @@ ylabel('Pressure [Pa]')
 
 i=1;
 for k=idx
-    for j=1:length(corr{i})
+    for j=1:length(corr{k})
         
-        if length(corr{i}{j}{3})>1   % Skip if no pressure correction
+        if length(corr{k}{j}{3})>1   % Skip if no pressure correction
             pressureCorrectionsAvailable = 1;
             if j==2
-                h1(i) = plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,2), lines{i}, 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineWidth', 1.5);
-                h2(i) = plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,1), ':', 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineWidth', 1.5);
+                h1(i) = plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,2), lines{k}, 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k), 'LineWidth', 1.5);
+                h2(i) = plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,1), ':', 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k), 'LineWidth', 1.5);
 
             elseif j==3
-                h3(i) = plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,2), lines{i}, 'Color', c(i), ...
-                    'Marker', m(i));
-                h4(i) = plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,1), ':', 'Color', c(i), ...
-                    'Marker', m(i));
+                h3(i) = plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,2), lines{k}, 'Color', c(k), ...
+                    'Marker', m(k));
+                h4(i) = plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,1), ':', 'Color', c(k), ...
+                    'Marker', m(k));
 
             elseif j/2 == floor(j/2)
-                plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,2), lines{i}, 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineWidth', 1.5);
-                plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,1), ':', 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i), 'LineWidth', 1.5);
+                plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,2), lines{k}, 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k), 'LineWidth', 1.5);
+                plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,1), ':', 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k), 'LineWidth', 1.5);
 
             else
-                plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,2), lines{i}, 'Color', c(i), ...
-                    'Marker', m(i));
-                plot(Re0{i}{j}, corr{i}{j}{3}(1:end-1,1), ':', 'Color', c(i), ...
-                    'Marker', m(i));
+                plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,2), lines{k}, 'Color', c(k), ...
+                    'Marker', m(k));
+                plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,1), ':', 'Color', c(k), ...
+                    'Marker', m(k));
 
             end
         end
@@ -556,8 +556,8 @@ end
 if exist('pressureCorrectionsAvailable','var')
     i=1;
     for k=idx
-        tempName{4*(i-1)+1} = [name{i} ' - LE'];
-        tempName{4*(i-1)+2} = [name{i} ' - TE'];
+        tempName{4*(i-1)+1} = [name{k} ' - LE'];
+        tempName{4*(i-1)+2} = [name{k} ' - TE'];
         tempName{4*(i-1)+3} = 'Ref - LE'; 
         tempName{4*(i-1)+4} = 'Ref - TE'; 
         h5(4*(i-1)+1) = h1(i);
@@ -585,17 +585,17 @@ if exist('pressureCorrectionsAvailable','var')
 
     i=1;
     for k=idx
-        for j=1:length(corr{i})
+        for j=1:length(corr{k})
 
             if j==2
-                h(i) = plot(Re0{i}{j}, corr{i}{j}{2}(1:end-1), lines{i}, 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i));
+                h(i) = plot(Re0{k}{j}, corr{k}{j}{2}(1:end-1), lines{k}, 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k));
             elseif j/2 == floor(j/2)
-                plot(Re0{i}{j}, corr{i}{j}{2}(1:end-1), lines{i}, 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i));
+                plot(Re0{k}{j}, corr{k}{j}{2}(1:end-1), lines{k}, 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k));
             else
-                plot(Re0{i}{j}, corr{i}{j}{2}(1:end-1), lines{i}, 'Color', c(i), ...
-                    'Marker', m(i));
+                plot(Re0{k}{j}, corr{k}{j}{2}(1:end-1), lines{k}, 'Color', c(k), ...
+                    'Marker', m(k));
             end
 
         end
@@ -622,19 +622,19 @@ if exist('pressureCorrectionsAvailable','var')
 
     i=1;
     for k=idx
-        for j=1:length(corr{i})
+        for j=1:length(corr{k})
 
-            Ftemp = F{i}{j}(1:end-1)-F{i}{j}(1);
+            Ftemp = F{k}{j}(1:end-1)-F{k}{j}(1);
 
             if j==2
-                h(i) = plot(Re0{i}{j}, corr{i}{j}{2}(1:end-1)./Ftemp*100, lines{i}, 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i));
+                h(i) = plot(Re0{k}{j}, corr{k}{j}{2}(1:end-1)./Ftemp*100, lines{k}, 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k));
             elseif j/2 == floor(j/2)
-                plot(Re0{i}{j}, corr{i}{j}{2}(1:end-1)./Ftemp*100, lines{i}, 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i));
+                plot(Re0{k}{j}, corr{k}{j}{2}(1:end-1)./Ftemp*100, lines{k}, 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k));
             else
-                plot(Re0{i}{j}, corr{i}{j}{2}(1:end-1)./Ftemp*100, lines{i}, 'Color', c(i), ...
-                    'Marker', m(i));
+                plot(Re0{k}{j}, corr{k}{j}{2}(1:end-1)./Ftemp*100, lines{k}, 'Color', c(k), ...
+                    'Marker', m(k));
             end
 
         end
@@ -657,32 +657,20 @@ if exist('pressureCorrectionsAvailable','var')
     grid minor;
     title('Pressure drag correction');
     xlabel('Re_1 [-]')
-    ylabel('\Delta C_D [%]')
+    ylabel('\DeltaC_{D_p} [%C_D]')
 
-    % Compute pressure drag delta's
     i=1;
     for k=idx
-        F_pressure = cell(size(corr{i}));
-        for j=1:length(corr{i})
-            F_pressure{j} = corr{i}{j}{2}(1:end-1);
-        end
-        [~, ~, dF_pressure{i}] = dragDelta(F_pressure, Re0{i}, 1:1:length(Re0{i}{1}));
-        i=i+1;
-    end
+        for j=1:length(dCd{k}.p)
 
-    % Calculate percentages and plot
-    i=1;
-    for k=idx
-        for j=1:length(dF_pressure{i})
-
-            dF_pressure_p{i}{j} = -dF_pressure{i}{j} ./ (F{i}{j}(1:end-1)-F{i}{j}(1)) * 100;
-
+            yPlot = dCd{k}.p{j} ./ Cd0{k}.total{1+2*(j-1)} * 100;
+            
             if j==1
-                h(i) = plot(Re0{i}{j}, dF_pressure_p{i}{j}, lines{i}, 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i));
+                h(i) = plot(Re0{k}{j}, yPlot, lines{k}, 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k));
             else
-                plot(Re0{i}{j}, dF_pressure_p{i}{j}, lines{i}, 'Color', c(i), ...
-                    'Marker', m(i), 'MarkerFaceColor', c(i));
+                       plot(Re0{k}{j}, yPlot, lines{k}, 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k));
             end
 
         end
@@ -712,14 +700,22 @@ ylabel('F [N]')
 
 i=1;
 for k = idx
-    for j=1:length(Cd0{i})
-        Ftemp = F{i}{j}(1:end-1)-F{i}{j}(1);
+    for j=1:length(Re0{k})
+        
+        Ftemp = F{k}{j}(1:end-1) - F{k}{j}(1);
+        
         if j==2
-            h(i) = plot(Re0{i}{j},Ftemp,lines{i},'Color',c(i),'Marker',m(i),'MarkerFaceColor',c(i));
+            h(i) = plot(Re0{k}{j}, Ftemp, lines{k}, 'Color', c(k),...
+                'Marker', m(k), 'MarkerFaceColor', c(k));
+            
         elseif j/2 == floor(j/2)
-            plot(Re0{i}{j},Ftemp,lines{i},'Color',c(i),'Marker',m(i),'MarkerFaceColor',c(i));
+            plot(Re0{k}{j}, Ftemp, lines{k}, 'Color', c(k),...
+                'Marker', m(k), 'MarkerFaceColor', c(k));
+            
         else
-            plot(Re0{i}{j},Ftemp,':','Color',c(i),'Marker',m(i));
+            plot(Re0{k}{j}, Ftemp, ':', 'Color', c(k),...
+                'Marker', m(k));
+            
         end
     end
     i=i+1;
@@ -739,13 +735,16 @@ ylabel('C_D [-]')
 
 i=1;
 for k = idx
-    for j=1:length(Cd0{i})
+    for j=1:length(Cd0{k}.total)
         if j==2
-            h(i) = plot(Re0{i}{j}(2:end),Cd0{i}{j}(2:end),lines{i},'Color',c(i),'Marker',m(i),'MarkerFaceColor',c(i));
+            h(i) = plot(Re0{k}{j}(2:end), Cd0{k}.total{j}(2:end), lines{k},...
+                    'Color', c(k), 'Marker', m(k), 'MarkerFaceColor', c(k));
         elseif j/2 == floor(j/2)
-            plot(Re0{i}{j}(2:end),Cd0{i}{j}(2:end),lines{i},'Color',c(i),'Marker',m(i),'MarkerFaceColor',c(i));
+                   plot(Re0{k}{j}(2:end), Cd0{k}.total{j}(2:end), lines{k},...
+                    'Color', c(k), 'Marker', m(k), 'MarkerFaceColor', c(k));
         else
-            plot(Re0{i}{j}(2:end),Cd0{i}{j}(2:end),':','Color',c(i),'Marker',m(i));
+                   plot(Re0{k}{j}(2:end), Cd0{k}.total{j}(2:end), ':',...
+                    'Color', c(k), 'Marker', m(k));
         end
     end
     i=i+1;
@@ -764,17 +763,22 @@ if exist('pressureCorrectionsAvailable','var')
     grid minor;
     title('Delta drag w/o pressure correction');
     xlabel('Re_1 [-]')
-    ylabel('\Delta C_D [%]')
+    ylabel('\DeltaC_{D_F} [%C_D]')
 
     i=1;
     for k = idx
-        for j=1:length(dCdp{i})
+        for j=1:length(dCd{k}.F)
+            
+            yPlot = dCd{k}.F{j}(2:end) ./ Cd0{k}.total{1+2*(j-1)}(2:end) * 100;      
+            
             if j==1
-                h(i) = plot(Re_target{i}{j}(2:end), dCdp{i}{j}(2:end) - dF_pressure_p{i}{j}(2:end),...
-                lines{i}, 'Color', c(i), 'Marker', m(i),'MarkerFaceColor',c(i));
+                h(i) = plot(Re_target{k}{j}(2:end), yPlot,...
+                lines{k}, 'Color', c(k), 'Marker', m(k),'MarkerFaceColor',c(k));
+            
             else
-                plot(Re_target{i}{j}(2:end), dCdp{i}{j}(2:end) - dF_pressure_p{i}{j}(2:end),...
-                lines{i}, 'Color', c(i), 'Marker', m(i),'MarkerFaceColor',c(i));
+                plot(Re_target{k}{j}(2:end), yPlot,...
+                lines{k}, 'Color', c(k), 'Marker', m(k),'MarkerFaceColor',c(k));
+            
             end
 
         end
@@ -800,17 +804,17 @@ box on;
 grid minor;
 title('Delta drag');
 xlabel('Re_1 [-]')
-ylabel('\Delta C_D [%]')
+ylabel('\Delta C_D [%C_D]')
 
 i=1;
 for k = idx
-    for j=1:length(dCdp{i})
+    for j=1:length(dCdp{k}.total)
         if j==1
-            h(i) = plot(Re_target{i}{j}(2:end), dCdp{i}{j}(2:end),...
-            lines{i}, 'Color', c(i), 'Marker', m(i),'MarkerFaceColor',c(i));
+            h(i) = plot(Re_target{k}{j}(2:end), dCdp{k}.total{j}(2:end),...
+            lines{k}, 'Color', c(k), 'Marker', m(k),'MarkerFaceColor',c(k));
         else
-            plot(Re_target{i}{j}(2:end), dCdp{i}{j}(2:end),...
-            lines{i}, 'Color', c(i), 'Marker', m(i),'MarkerFaceColor',c(i));
+            plot(Re_target{k}{j}(2:end), dCdp{k}.total{j}(2:end),...
+            lines{k}, 'Color', c(k), 'Marker', m(k),'MarkerFaceColor',c(k));
         end
         
     end
@@ -834,25 +838,25 @@ box on;
 grid minor;
 title('Delta drag (averaged)');
 xlabel('Re_1 [-]')
-ylabel('\Delta C_D [%]')
+ylabel('\Delta C_D [%C_D]')
 
 i=1;
 for k = idx
     
     % Plot average
-    dFavg = zeros(size(dCdp{i}{1}));
-    for j=1:length(dCdp{i})
-        dFavg = dFavg + dCdp{i}{j};
+    dFavg = zeros(size(dCdp{k}.total{1}));
+    for j=1:length(dCdp{k}.total)
+        dFavg = dFavg + dCdp{k}.total{j};
     end
-    dFavg = dFavg/length(dCdp{i});
-    h(i) = plot(Re_target{i}{1}(2:end), dFavg(2:end), lines{i}, 'Color',...
-        c(i), 'Marker', m(i), 'MarkerFaceColor', c(i), 'DisplayName', name{i});
+    dFavg = dFavg / length(dCdp{k}.total);
+    h(i) = plot(Re_target{k}{1}(2:end), dFavg(2:end), lines{k}, 'Color',...
+        c(k), 'Marker', m(k), 'MarkerFaceColor', c(k), 'DisplayName', name{k});
     
     % Plot spread
-%     plot(Re_target{i}{1}(2:end), dFavg(2:end)+RMSE{i}(2:end)', '--',...
-%         'Color', c(i));
-%     plot(Re_target{i}{1}(2:end), dFavg(2:end)-RMSE{i}(2:end)', '--',...
-%         'Color', c(i));
+%     plot(Re_target{k}{1}(2:end), dFavg(2:end)+RMSE{k}(2:end)', '--',...
+%         'Color', c(k));
+%     plot(Re_target{k}{1}(2:end), dFavg(2:end)-RMSE{k}(2:end)', '--',...
+%         'Color', c(k));
 
     i=i+1;
 end
@@ -873,22 +877,26 @@ box on;
 grid on;
 title('RMSE');
 xlabel('Re_1 [-]')
-ylabel('\Delta C_D [%]')
+ylabel('\Delta C_D [%C_D]')
 ylim([0 2]);
 
 i=1;
 for k=idx
-    avg = zeros(size(dCdp{i}{1}));
-    for j=1:length(dCdp{i})
-        avg = avg + dCdp{i}{j};
-    end
-    avg = avg/length(dCdp{i});
-    for j=1:length(dCdp{i})
-        plot(Re_target{i}{j}(2:end), abs(dCdp{i}{j}(2:end)-avg(2:end)),...
-            '.:', 'Color', c(i));
+    avg = zeros(size(dCdp{k}.total{1}));
+    
+    for j=1:length(dCdp{k}.total)
+        avg = avg + dCdp{k}.total{j};
     end
     
-    h(i) = plot(RMSE_X{i}(2:end), RMSE{i}(2:end),lines{i}, 'Color', c(i), 'LineWidth',2);
+    avg = avg/length(dCdp{k}.total);
+    
+    for j=1:length(dCdp{k}.total)
+        plot(Re_target{k}{j}(2:end), abs(dCdp{k}.total{j}(2:end) - avg(2:end)),...
+            '.:', 'Color', c(k));
+    end
+    
+    h(i) = plot(RMSE_X{k}(2:end), RMSE{k}(2:end), lines{k},...
+        'Color', c(k), 'LineWidth', 2);
     
     i=i+1;
 end
@@ -905,13 +913,14 @@ s1 = subplot(4,2,1);
     grid minor;
     xlim([-0.1*xMax 1.1*xMax]);
     ylim([0 2]);
-    ylabel('\Delta C_D [%]')
+    ylabel('$\Delta C_D - \overline {\Delta C_D} \ [\%C_D]$','interpreter','latex')
 s2 = subplot(4,2,2);
     title('w/o Pressure correction')
     box on;
     grid minor;
     xlim([-0.1*xMax 1.1*xMax]);
     ylim([-10 10]);
+    ylabel('$\Delta C_{D_F} \ [\%C_D]$','interpreter','latex')
 s3 = subplot(4,2,3);
     title('Null force correction')
     box on;
@@ -919,7 +928,7 @@ s3 = subplot(4,2,3);
     xlim([-0.1*xMax 1.1*xMax]);
     ylim([-5 5]);
     xlabel('Re_1 [-]')
-    ylabel('\Delta C_D [%]')
+    ylabel('$\Delta F_{null} \ [\%C_D]$','interpreter','latex')
 s4 = subplot(4,2,4);
     title('Pressure correction')
     box on;
@@ -927,7 +936,7 @@ s4 = subplot(4,2,4);
     xlim([-0.1*xMax 1.1*xMax]);
     ylim([-10 10]);
     xlabel('Re_1 [-]')
-    ylabel('\Delta C_D [%]')
+    ylabel('$\Delta C_{D_p} \ [\%C_D]$','interpreter','latex')
 s5 = subplot(4,2,[5:8]);
     title('Final result')
     box on;
@@ -935,6 +944,7 @@ s5 = subplot(4,2,[5:8]);
     xlim([-0.1*xMax 1.1*xMax]);
     ylim([-10 10]);
     xlabel('Re_1 [-]')
+    ylabel('$\Delta C_D \ [\%C_D]$','interpreter','latex')
 
 fig1 = get(ax_rmse,'children');
 fig2 = get(ax_uncorr,'children');

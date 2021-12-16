@@ -3,12 +3,14 @@ function [x,y] = extractDataFromFigure
 
 fig = gcf;
 
-dataObjs = findobj(fig,'-property','XData')
+dataObjs = findobj(fig,'-property','XData');
 for i=1:length(dataObjs)
     x{i} = dataObjs(i).XData;
 end
 
-dataObjs = findobj(fig,'-property','YData')
+dataObjs = findobj(fig,'-property','YData');
 for i=1:length(dataObjs)
     y{i} = dataObjs(i).YData;
 end
+
+disp(dataObjs);

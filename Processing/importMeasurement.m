@@ -75,6 +75,7 @@ else
     
     % Interpret pressure data
     [~, dF_gap, dF_int, P, X, p_gap] = pressureTranslator(p, pConfig);
+    F_p = dF_gap + dF_int;
     
 end
 
@@ -101,8 +102,8 @@ F      = F + shift;
 F(end) = F(1);
 
 % Pressure correction
-F      = F - dF_gap;
-F      = F - dF_int;
+% F0     = F;
+% F      = F - F_p;
 
 % Combine corrections to pass to function output
 corr = {shift, dF_gap, p_gap, dF_int};
@@ -115,16 +116,28 @@ corr = {shift, dF_gap, p_gap, dF_int};
 [Re, V, rho, nu] = velocityCalculator(q, pa, T, hum);
 
 % Calculate C_D
-Fcd   = F-F(1);             % ensure division by 0
-S     = 0.3663 * 0.8813;    % test plate surface area
-Cd    = Fcd./(0.5*rho.*V.^2.*S);
-Cd(1) = 0;                  % replace first value which is always NaN
+S             = 0.3663 * 0.8813;    % test plate surface area
+q             = 0.5*rho.*V.^2;
+
+Cd.F          =  (F-F(1)) ./ (q.*S);
+Cd.p          = -(F_p-F_p(1)) ./ (q.*S);
+Cd.total      = Cd.F + Cd.p;
+
+Cd.total(1)   = 0;                  % replace first value which is always NaN
+Cd.F(1)       = 0;                  % replace first value which is always NaN
+Cd.p(1)       = 0;                  % replace first value which is always NaN
 
 % Replace values in case of missing data (e.g. pa/T/hum is zero)
-Cd(isnan(Cd)) = 0;
-Cd(isinf(Cd)) = 0;
-Re(isnan(Re)) = 0;
-Re(isinf(Re)) = 0;
+Cd.total(isnan(Cd.total)) = 0;
+Cd.F(isnan(Cd.F))         = 0;
+Cd.p(isnan(Cd.p))         = 0;
+
+Cd.total(isinf(Cd.total)) = 0;
+Cd.F(isinf(Cd.F))         = 0;
+Cd.p(isinf(Cd.p))         = 0;
+
+Re(isnan(Re))             = 0;
+Re(isinf(Re))             = 0;
 
 % --------------------------------------------------------------------
 % Error checks -------------------------------------------------------

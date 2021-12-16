@@ -17,6 +17,11 @@ end
 % Find average drag
 for i = 1:N
     
+    % If variable with fields (total, F, p) is given, then use 'total'
+    if isfield(Y{i}, 'total')
+        Y{i} = Y{i}.total;
+    end
+    
     Yavg{i} = zeros(size(Y{i}{1}));
     for j=1:length(Y{i})
         Yavg{i} = Yavg{i} + Y{i}{j};

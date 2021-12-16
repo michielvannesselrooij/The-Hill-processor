@@ -83,10 +83,18 @@ end
 % Calculate delta's
 if length(Cd) > 1
     
-    [Cd0, Re0, dCd, dCdp, Re_target] = dragDelta(Cd, Re);
+    for i=1:length(Cd)
+        Cd_tot{i} = Cd{i}.total;
+        Cd_F{i}   = Cd{i}.F;
+        Cd_p{i}   = Cd{i}.p;
+    end
+    
+    [Cd0.total, Re0, dCd.total, dCdp.total, Re_target] = dragDelta(Cd_tot, Re);
+    [Cd0.F,     ~,   dCd.F,     dCdp.F,     ~]         = dragDelta(Cd_F, Re);
+    [Cd0.p,     ~,   dCd.p,     dCdp.p,     ~]         = dragDelta(Cd_p, Re);
 
     % Calculate spread (RMSE)
-    [RMSE, RMSE_X] = calcRMSE(dCdp, Re_target);
+    [RMSE, RMSE_X] = calcRMSE(dCdp.total, Re_target);
     
 else
     Cd0 = []; Re0 = []; dCd = []; dCdp = []; Re_target = [];

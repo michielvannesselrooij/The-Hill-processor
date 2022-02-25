@@ -253,8 +253,8 @@ if length(idx_double)>1
             end
             Vdrag = mean(Vdrag, 2);
 
-            for j=1:length(dCdp{i})
-                Cddrag = [Cddrag, dCdp{i}{j}];
+            for j=1:length(dCdp{i}.total)
+                Cddrag = [Cddrag, dCdp{i}.total{j}];
             end
             Cddrag = mean(Cddrag, 2);
 
@@ -446,8 +446,14 @@ for i=idx
     % Determine interpolation range for each BL
     for j=1:length(u_power{i})
         for k=1:length(u_power{i}{j})
-            f_min{j}(k) = min(u_power{i}{j}{k}(:,1));
-            f_max{j}(k) = max(u_power{i}{j}{k}(:,1));
+            A = u_power{i}{j}{k}(:,1);
+            if isempty(A)
+                f_min{j}(k) = 0;
+                f_max{j}(k) = 0;
+            else
+                f_min{j}(k) = min(A);
+                f_max{j}(k) = max(A);
+            end
         end
     end
     for j=1:length(u_power{i})

@@ -102,12 +102,21 @@ if exist(hotwireFolder,'dir') && ~(isempty(HW_mat_files) && isempty(HW_csv_files
                 'B', 'PI', 'd', 'd_star', 'theta', 'H', 'up_model',...
                 'yp_model');
             
+            if iscell(nu)
+                nu2 = 0;
+                for j=1:length(nu)
+                    nu2 = nu2 + mean(nu{j});
+                end
+                nu2 = nu2/length(nu);
+            else
+                nu2 = nu;
+            end
+            
             y2{i}        = y;
             u2{i}        = u;
             u_rms2{i}    = u_rms;
             u_power2{i}  = u_power;
             ut2(i)       = ut;
-            nu2(i)       = nu;
             y02(i)       = y0;
             k2(i)        = k;
             B2(i)        = B;

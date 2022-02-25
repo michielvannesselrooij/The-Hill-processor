@@ -1,4 +1,4 @@
-function defaultPlots(name, Cd0, Re0, dCd, dCdp, Re_target, RMSE, RMSE_X,...
+function defaultPlots(name, Cd0, Re0, dCd, dCdp, Re_target, CI, CI_X,...
     F, F_rms, F_power, p, P, X, T, Troom, pa, hum, Re, V, rho, nu, corr,...
     colors, lines, markers)
 % ------------------------------------------------------------------------
@@ -169,6 +169,7 @@ for k=idx
                 if j==1 && l==2
                     h(i) = plot(xPlot, yPlot(l,:)', 'Color', c(k),...
                     'Marker', m(k), 'MarkerFaceColor', c(k), 'LineStyle', 'none');
+                    i=i+1;
                 else
                     plot(xPlot, yPlot(l,:)', 'Color', c(k),...
                     'Marker', m(k), 'MarkerFaceColor', c(k), 'LineStyle', 'none');
@@ -187,7 +188,6 @@ for k=idx
         end
               
     end
-    i=i+1;
 end
 legend(h,name(idx),'Location','South');
 
@@ -570,6 +570,60 @@ if exist('pressureCorrectionsAvailable','var')
     legend(h5,tempName,'Location','EastOutside');
 end
 
+%% Gap pressure deltas
+
+figure;
+hold on;
+grid minor;
+title('Gap pressure delta');
+xlabel('Re_1 [-]')
+ylabel('Pressure [Pa]')
+
+i=1;
+for k=idx
+    for j=1:length(corr{k})
+        
+        if length(corr{k}{j}{3})>1   % Skip if no pressure correction
+            pressureCorrectionsAvailable = 1;
+            if j==2
+                h1(i) = plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,2) - corr{k}{j}{3}(1:end-1,1), lines{k}, 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k), 'LineWidth', 1.5);
+
+            elseif j==3
+                h2(i) = plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,2) - corr{k}{j}{3}(1:end-1,1), lines{k}, 'Color', c(k), ...
+                    'Marker', m(k));
+
+            elseif j/2 == floor(j/2)
+                plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,2)-corr{k}{j}{3}(1:end-1,1), lines{k}, 'Color', c(k), ...
+                    'Marker', m(k), 'MarkerFaceColor', c(k), 'LineWidth', 1.5);
+
+            else
+                plot(Re0{k}{j}, corr{k}{j}{3}(1:end-1,2)-corr{k}{j}{3}(1:end-1,1), lines{k}, 'Color', c(k), ...
+                    'Marker', m(k));
+
+            end
+        end
+    end
+    
+    i=i+1;
+end
+
+% Make legend (if lines were plotted)
+if exist('pressureCorrectionsAvailable','var')
+    clear tempName
+    i=1;
+    for k=idx
+        tempName{2*(i-1)+1} = [name{k}];
+        tempName{2*(i-1)+2} = [name{k} ' - Ref'];
+        h5(2*(i-1)+1) = h1(i);
+        h5(2*(i-1)+2) = h2(i);
+
+        i=i+1;
+    end
+    legend(h5,tempName,'Location','EastOutside');
+end
+
+
 %% Pressure drag
 % (if available)
 
@@ -869,36 +923,40 @@ ylim([-10 10]);
 %% Delta bar chart
 dF_atMax = deltaBarChart(Re_target(idx), dCdp(idx), name_unique(idx));
 
-%% RMSE (%)
+%% Uncertainty
 
 figure;
 hold on;
 box on;
 grid on;
-title('RMSE');
+title('Uncertainty');
 xlabel('Re_1 [-]')
-ylabel('\Delta C_D [%C_D]')
+ylabel('95% CI [%C_D]')
 ylim([0 2]);
 
 i=1;
 for k=idx
-    avg = zeros(size(dCdp{k}.total{1}));
+%     avg = zeros(size(dCdp{k}.total{1}));
+%     
+%     for j=1:length(dCdp{k}.total)
+%         avg = avg + dCdp{k}.total{j};
+%     end
+%     
+%     avg = avg/length(dCdp{k}.total);
     
-    for j=1:length(dCdp{k}.total)
-        avg = avg + dCdp{k}.total{j};
+%     for j=1:length(dCdp{k}.total)
+%         plot(Re_target{k}{j}(2:end), abs(dCdp{k}.total{j}(2:end) - avg(2:end)),...
+%             '.:', 'Color', c(k));
+%     end
+
+    df = length(dCdp{k}.total)-1;
+    if df >= 1
+        sigmas = tinv(0.975, df);
+        h(i) = plot(CI_X{k}(2:end), CI{k}(2:end), lines{k},...
+            'Color', c(k), 'Marker', m(k), 'MarkerFaceColor', c(k));
+
+        i=i+1;
     end
-    
-    avg = avg/length(dCdp{k}.total);
-    
-    for j=1:length(dCdp{k}.total)
-        plot(Re_target{k}{j}(2:end), abs(dCdp{k}.total{j}(2:end) - avg(2:end)),...
-            '.:', 'Color', c(k));
-    end
-    
-    h(i) = plot(RMSE_X{k}(2:end), RMSE{k}(2:end), lines{k},...
-        'Color', c(k), 'LineWidth', 2);
-    
-    i=i+1;
 end
 legend(h,name(idx),'Location','NorthEast');
 

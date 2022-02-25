@@ -1,15 +1,12 @@
-function [RMSE, RMSE_X] = calcRMSE(E,X)
+function [CI, CI_X] = calcCI(E,X)
 % ------------------------------------------------------------------------
-% Calculate Root Mean Square Error, based on an Error input
+% Calculate uncertainty at 95% confidence, based on an Error input
 %
 % INPUT:
 % E      : Cell containing equal sized vectors with the 'errors' or delta's
 % X      : Cell containing equal sized vectors with query points (e.g. Re)
-% 
-% OUTPUT:
-% RMSE   : RMSE vector of size vectors in E
 %
-% MvN 2019 - Dimple Aerospace BV
+% MvN 2021 - Dimple Aerospace BV
 % ------------------------------------------------------------------------
 
     % Check input
@@ -60,18 +57,21 @@ function [RMSE, RMSE_X] = calcRMSE(E,X)
         X2(i,:) = X{i};
     end
     X = X2;
-    RMSE_X = mean(X,1);
+    CI_X = mean(X,1);
     
     % Sample all errors E on the average x-coordinates
     for i = 1:N
-        E2(i,:) = interp1(X(i,:), E(i,:), RMSE_X, 'linear', 'extrap');
+        E2(i,:) = interp1(X(i,:), E(i,:), CI_X, 'linear', 'extrap');
     end
     E = E2;
     
     % Find average E
-    E_avg = mean(E,1);
-
-    % Take the Root Mean Square (RMS) of the Error (E)
-    RMSE = sqrt(mean((E-E_avg).^2,1)); 
+    df    = N-1;
+    if df >= 1
+        sigmas = tinv(0.975, df);
+        CI = sigmas * std(E)/sqrt(N);
+    else
+        CI = NaN;
+    end
 
 end

@@ -1,4 +1,4 @@
-function [name, Cd0, Re0, dCd, dCdp, Re_target, RMSE, RMSE_X, F, F_rms,...
+function [name, Cd0, Re0, dCd, dCdp, Re_target, CI, CI_X, F, F_rms,...
     F_power, p, P, X, T, Troom, pa, hum, Re, V, rho, nu, nu_avg, corr, y,...
     u, u_rms, u_power, ut, y0, k, B, PI, d, d_star, theta, H, up_model,...
     yp_model] = importFromMastersheet(id, forceFileRead, custom_name)
@@ -93,10 +93,10 @@ if length(Cd) > 1
     [Cd0.F,     ~,   dCd.F,     dCdp.F,     ~]         = dragDelta(Cd_F, Re);
     [Cd0.p,     ~,   dCd.p,     dCdp.p,     ~]         = dragDelta(Cd_p, Re);
 
-    % Calculate spread (RMSE)
-    [RMSE, RMSE_X] = calcRMSE(dCdp.total, Re_target);
+    % Calculate uncertainties
+    [CI, CI_X] = calcCI(dCdp.total, Re_target);
     
 else
     Cd0 = []; Re0 = []; dCd = []; dCdp = []; Re_target = [];
-    RMSE = []; RMSE_X = [];
+    CI = []; CI_X = [];
 end

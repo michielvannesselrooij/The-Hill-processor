@@ -75,9 +75,11 @@ else
     
     % Interpret pressure data
     [~, dF_gap, dF_int, P, X, p_gap] = pressureTranslator(p, pConfig);
-    F_p = dF_gap + dF_int;
     
 end
+
+% Calculate pressure contribution to force
+F_p = dF_gap + dF_int;
 
 % Return Hill sensor data or tunnel sensor data?
 if useTunnelData

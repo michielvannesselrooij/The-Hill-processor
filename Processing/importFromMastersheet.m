@@ -68,7 +68,7 @@ else
     useTunnelData = [];
 end
 
-if strcmp(warmUp,'yes')
+if strcmp(warmUp,'yes') || strcmp(warmUp,'Yes')
     warmUp = 1;
 else
     warmUp = 0;

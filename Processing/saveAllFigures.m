@@ -3,7 +3,6 @@ function saveAllFigures(currentSize, windowSize)
 %% Check inputs
 
 % Default
-
 if exist('currentSize','var')
     if ~islogical(currentSize) && currentSize ~= 0 && currentSize ~= 1
         error('First argument should be a boolean, if any');
@@ -35,12 +34,13 @@ figList = handle( sort( double(findall(0, 'type', 'figure') ) ));
 % Save Matlab figures as .fig file
 savefig(figList, ['figures' filesep 'figures'], 'compact');
 
-% Ssave pixel images one by one
+% Save pixel images one by one
 for i=1:length(figList)
     
     % Resize?
     if ~currentSize
         set(figList(i),'WindowStyle','normal');
+        pause(0.5);
         set(figList(i), 'Units', 'pixels', 'Position', [10; 10; windowSize(:)]');
     end
     
@@ -50,4 +50,6 @@ for i=1:length(figList)
     if ~currentSize
         set(figList(i),'WindowStyle','docked');
     end
+    
+    fprintf('Figure %i saved! \n', i);
 end

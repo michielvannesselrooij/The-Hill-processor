@@ -40,8 +40,14 @@ for i=1:length(figList)
     % Resize?
     if ~currentSize
         set(figList(i),'WindowStyle','normal');
-        pause(0.5);
-        set(figList(i), 'Units', 'pixels', 'Position', [10; 10; windowSize(:)]');
+        
+        pos = get(gcf, 'Position');
+        while ~(pos(3) == windowSize(1) && pos(4) == windowSize(2))
+            set(figList(i), 'Units', 'pixels', 'Position', [10; 10; windowSize(:)]');
+            pause(0.1);
+            pos = get(gcf, 'Position');
+        end
+        
     end
     
     saveas(figList(i), ['figures' filesep 'figure_' num2str(i) '.png']);

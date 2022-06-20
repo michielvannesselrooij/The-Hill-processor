@@ -31,31 +31,44 @@ mkdir figures;
 % Define the list of figures
 figList = handle( sort( double(findall(0, 'type', 'figure') ) ));
 
-% Save Matlab figures as .fig file
-savefig(figList, ['figures' filesep 'figures'], 'compact');
+if isempty(figList)
+    fprintf('No figures to store! \n');
+else
+    % Save Matlab figures as .fig file
+    savefig(figList, ['figures' filesep 'figures'], 'compact');
 
-% Save pixel images one by one
-for i=1:length(figList)
-    
-    % Resize?
-    if ~currentSize
-        set(figList(i),'WindowStyle','normal');
-        
-        pos = get(gcf, 'Position');
-        while ~(pos(3) == windowSize(1) && pos(4) == windowSize(2))
-            set(figList(i), 'Units', 'pixels', 'Position', [10; 10; windowSize(:)]');
-            pause(0.1);
-            pos = get(gcf, 'Position');
+    % Save pixel images one by one
+    for i=1:length(figList)
+
+        % Resize?
+        if ~currentSize
+            set(figList(i),'WindowStyle','normal');
+
+            pos = get(figList(i),'Position');
+            totalTime = 0;
+            while ~(pos(1) == 10 &&...
+                    pos(2) == 10 &&...
+                    pos(3) == windowSize(1) &&... 
+                    pos(4) == windowSize(2)) &&...
+                    totalTime < 10
+                set(figList(i), 'Units', 'pixels', 'Position', [10; 10; windowSize(:)]');
+
+                dt = 1; % wait time
+                pause(dt);
+                totalTime = totalTime + dt;
+
+                pos = get(figList(i),'Position');
+            end
+
         end
-        
+
+        saveas(figList(i), ['figures' filesep 'figure_' num2str(i) '.png']);
+
+        % Dock figure again
+        if ~currentSize
+            set(figList(i),'WindowStyle','docked');
+        end
+
+        fprintf('Figure %i saved! \n', i);
     end
-    
-    saveas(figList(i), ['figures' filesep 'figure_' num2str(i) '.png']);
-    
-    % Dock figure again
-    if ~currentSize
-        set(figList(i),'WindowStyle','docked');
-    end
-    
-    fprintf('Figure %i saved! \n', i);
 end

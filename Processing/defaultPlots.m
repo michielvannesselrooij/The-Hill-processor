@@ -1,3 +1,4 @@
+r
 function defaultPlots(name, Cd0, Re0, dCd, dCdp, Re_target, CI, CI_X,...
     F, F_rms, F_power, p, P, X, T, Troom, pa, hum, Re, V, rho, nu, corr,...
     colors, lines, markers)
@@ -966,12 +967,12 @@ ax_rmse = gca;
 %% Dashboard figure
 figure;
 s1 = subplot(4,2,1);
-    title('RMSE')
+    title('Uncertainty')
     box on;
     grid minor;
     xlim([-0.1*xMax 1.1*xMax]);
     ylim([0 2]);
-    ylabel('$\Delta C_D - \overline {\Delta C_D} \ [\%C_D]$','interpreter','latex')
+    ylabel('95% CI [%C_D]')
 s2 = subplot(4,2,2);
     title('w/o Pressure correction')
     box on;

@@ -94,7 +94,6 @@ end
 % --------------------------------------------------------------------
 
 % Correct q based on pitot position
-% q      = q_Mensor;
 q      = q - q(end)*q./max(q);
 q      = q*(1+Re_corr);
 
@@ -102,10 +101,6 @@ q      = q*(1+Re_corr);
 shift  = -(F(end)-F(1)) * (F-F(1))./(max(F)-F(1));
 F      = F + shift;
 F(end) = F(1);
-
-% Pressure correction
-% F0     = F;
-% F      = F - F_p;
 
 % Combine corrections to pass to function output
 corr = {shift, dF_gap, p_gap, dF_int};

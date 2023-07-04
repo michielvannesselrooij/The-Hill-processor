@@ -8,16 +8,14 @@ function [T, Troom, pa, hum, tunnel_q, tunnel_T, tunnel_pa,...
 
     data = importdata(fileName);
     
-    % Separate measurements 
-    % A) via empty rows
-    filter1 = [1; find(sum(abs(data),2) == 0)+1; length(data)+1];
+    % Exclude any empty rows (legacy data)
+    zeroRows = find(sum(abs(data),2) == 0);
+    data(zeroRows, :) = [];
 
-    % B) via steps in rpm
+    % Separate measurements by rpm change
     rpm = data(:,7);
     rpmChange = rpm(2:end) - rpm(1:end-1);
-    filter2 = find(rpmChange > 5)+1;
-
-    filter = sort(unique( [filter1; filter2] ));
+    filter = [1; (find(abs(rpmChange) > 10) +1); size(data,1)+1];
     
     % Initialize
     T           = zeros(length(filter)-1,1);

@@ -30,6 +30,14 @@ if forceFileRead || previouslyProcessed~=2
     [F, F_rms, F_power, sampleTime] = read_file_F(fileName_F);
     [T, Troom, pa, hum, tunnel_q, tunnel_T, tunnel_pa, tunnel_hum, ...
         tunnel_rpm, p, q_Mensor] = read_file_env(fileName, useTunnelData);
+
+    if length(F) ~= length(T)
+        error('The number of condition measurements does not match the number of force measurements');
+    end
+
+    if length(F) ~= size(p,1)
+        error('The number of pressure measurements does noet match the number of force measurements');
+    end
     
     % Calibrate force data
     showPlot = 1;

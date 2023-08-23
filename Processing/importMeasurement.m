@@ -29,7 +29,7 @@ if forceFileRead || previouslyProcessed~=2
     % Load data from .csv files
     [F, F_rms, F_power, sampleTime] = read_file_F(fileName_F);
     [T, Troom, pa, hum, tunnel_q, tunnel_T, tunnel_pa, tunnel_hum, ...
-        tunnel_rpm, p, q_Mensor] = read_file_env(fileName, useTunnelData);
+        tunnel_rpm, p] = read_file_env(fileName, useTunnelData);
 
     if length(F) ~= length(T)
         error('The number of condition measurements does not match the number of force measurements');
@@ -63,14 +63,14 @@ if forceFileRead || previouslyProcessed~=2
     
     % Save as .mat file
     save(fileNameMat, 'F', 'F_rms', 'F_power', 'p', 'p_rms', 'p_power',...
-        'q', 'q_Mensor', 'T', 'Troom', 'pa', 'hum', 'tunnel_q', 'tunnel_T',...
+        'q', 'T', 'Troom', 'pa', 'hum', 'tunnel_q', 'tunnel_T',...
         'tunnel_pa', 'tunnel_hum', 'tunnel_rpm', 'Re', 'V', 'rho', 'nu');
 
 else
     
     % Load data from .mat file
     load(fileNameMat, 'F', 'F_rms', 'F_power', 'p', 'p_rms', 'p_power',...
-        'q', 'q_Mensor', 'T', 'Troom', 'pa', 'hum', 'tunnel_q', 'tunnel_T',...
+        'q', 'T', 'Troom', 'pa', 'hum', 'tunnel_q', 'tunnel_T',...
         'tunnel_pa', 'tunnel_hum', 'tunnel_rpm', 'Re', 'V', 'rho', 'nu');
     
     % Substitute in missing data if necessary

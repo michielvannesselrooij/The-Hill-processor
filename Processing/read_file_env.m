@@ -1,21 +1,19 @@
 function [T, Troom, pa, hum, tunnel_q, tunnel_T, tunnel_pa,...
-    tunnel_hum, tunnel_rpm, p, q] = read_file_env(fileName, tunnel)
+    tunnel_hum, tunnel_rpm, p] = read_file_env(fileName, tunnel)
 % ------------------------------------------------------------------------
 % Reads various data from .csv measurement file
 % 
 % MvN 2019 - Dimple Aerospace BV
 % ------------------------------------------------------------------------
 
-    data = importdata(fileName);
+    data = readmatrix(fileName);
     
     % Exclude any empty rows (legacy data)
     zeroRows = find(sum(abs(data),2) == 0);
     data(zeroRows, :) = [];
 
-    % Separate measurements by rpm change
-    rpm = data(:,7);
-    rpmChange = rpm(2:end) - rpm(1:end-1);
-    filter = [1; (find(abs(rpmChange) > 10) +1); size(data,1)+1];
+    % Separate measurements by NaN in temperature
+    filter = [1; find(isnan(data(:,2))); size(data,1)+1];
     
     % Initialize
     T           = zeros(length(filter)-1,1);
@@ -35,11 +33,10 @@ function [T, Troom, pa, hum, tunnel_q, tunnel_T, tunnel_pa,...
     for i = 1:length(filter)-1
         
         % Import Hill sensor data
-        T(j)     = mean(data( filter(i) : filter(i+1)-1, 4));              % Temperature test section [C]
-        Troom(j) = mean(data( filter(i) : filter(i+1)-1, 5));              % Temperature at control box [C]
-        pa(j)    = mean(data( filter(i) : filter(i+1)-1, 6));              % Absolute pressure [Pa]
-        hum(j)   = mean(data( filter(i) : filter(i+1)-1, 3));              % Relative humidity [%]
-        q(j)     = mean(data( filter(i) : filter(i+1)-1, 7));              % Mensor (TEMP)
+        T(j)     = mean(data( filter(i)+1 : filter(i+1)-1, 1));              % Temperature test section [C]
+        Troom(j) = mean(data( filter(i)+1 : filter(i+1)-1, 2));              % Temperature at control box [C]
+        pa(j)    = mean(data( filter(i)+1 : filter(i+1)-1, 4));              % Absolute pressure [Pa]
+        hum(j)   = mean(data( filter(i)+1 : filter(i+1)-1, 1));              % Relative humidity [%]
         
         
         % Optionally import tunnel sensor data

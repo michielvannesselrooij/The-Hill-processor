@@ -5,7 +5,7 @@ function [F, F_rms, F_power, sampleTime] = read_file_F(fileName)
 % MvN 2019 - Dimple Aerospace BV
 % ------------------------------------------------------------------------
 
-tic;
+startFileLoading = tic;
 
 delimiter = '\t';
 startRow = 4;
@@ -34,11 +34,15 @@ for i = 1:length(filter)-1
 
     end
 
-    % Mean and RMS data
-    F(i)     = mean(F_raw{i});
-    F_rms(i) = rms(F(i));
+    % Find mean (correct for truncation if needed)
+    tolerance = 1e-4;
+    timeout = 5;
+    showPlot = false;
+    F(i) = MeanWithBottomTruncation(F_raw{i}, tolerance, timeout, showPlot);
     
     % Power spectrum
+    F_rms(i) = rms(F(i));
+
     fs           = 25000;               % Sample rate
     n            = length(F_raw{i});    % Number of samples
     
@@ -63,5 +67,5 @@ end
 
 % Tell what I've done
 disp(['Succesfully imported file ' fileName]);
-toc;
+toc(startFileLoading);
 disp(' ');

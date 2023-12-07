@@ -194,7 +194,7 @@ else
     for i=1:size(p_LE,1)
         p_int_LE{i} = interp1(z_LE/1000, p_LE(i,:), zq, 'linear', 'extrap');
         p_int_LE{i} = repmat(p_int_LE{i}, length(yq), 1)...
-                        .* repmat(p_vert{i}', 1, length(zq));
+                        + repmat(p_vert{i}', 1, length(zq));
     end
 
     % Trailing edge
@@ -204,7 +204,7 @@ else
     for i=1:size(p_TE,1)
         p_int_TE{i} = interp1(z_TE/1000, p_TE(i,:), zq, 'linear', 'extrap');
         p_int_TE{i} = repmat(p_int_TE{i}, length(yq), 1)...
-                        .* repmat(p_vert{i}', 1, length(zq));
+                        + repmat(p_vert{i}', 1, length(zq));
     end
 
     % Pressure delta & drag correction
